@@ -63,6 +63,45 @@ function AppRouter() {
                 />
             </Route>
             <Route
+                path="ai"
+                element={
+                    <PlaceholderPage
+                        title="AI 助手"
+                        description="智能问答与数据分析"
+                    />
+                }
+            />
+
+            <Route
+                path="settings/users"
+                element={
+                    <PlaceholderPage
+                        title="用户管理"
+                        description="管理系统用户"
+                    />
+                }
+            />
+
+            <Route
+                path="settings/roles"
+                element={
+                    <PlaceholderPage
+                        title="角色权限"
+                        description="管理角色和页面权限"
+                    />
+                }
+            />
+
+            <Route
+                path="profile"
+                element={
+                    <PlaceholderPage
+                        title="个人中心"
+                        description="查看和修改个人信息"
+                    />
+                }
+            />
+            <Route
                 path="*"
                 element={<Navigate to="/dashboard" replace />}
             />

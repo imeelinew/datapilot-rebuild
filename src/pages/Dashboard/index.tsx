@@ -3,7 +3,7 @@ import { Card, Col, Row, Statistic, Typography } from 'antd'
 function Dashboard() {
   return (
     <>
-      <Typography.Title level={2}>数据仪表盘</Typography.Title>
+      <Typography.Title level={2}>仪表盘</Typography.Title>
 
       <Row gutter={[16, 16]}>
         <Col span={6}>
