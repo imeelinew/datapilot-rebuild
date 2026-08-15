@@ -1,37 +1,282 @@
-import { Card, Col, Row, Statistic, Typography } from 'antd'
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useState,
+} from 'react'
+import {
+    Button,
+    Card,
+    Col,
+    Row,
+    Space,
+    Spin,
+    Statistic,
+    Typography,
+    message,
+} from 'antd'
+import { ReloadOutlined } from '@ant-design/icons'
+import dashboardService from '@/api/dashboard'
+import type { CityOverview, EventStats, FacilityStat, TrafficRankingItem } from '@/types/dashboard'
+//渲染图表
+import type { EChartsOption } from 'echarts'
+import ChartRenderer from '@/components/ChartRenderer'
 
-function Dashboard() {
-  return (
-    <>
-      <Typography.Title level={2}>仪表盘</Typography.Title>
-
-      <Row gutter={[16, 16]}>
-        <Col span={6}>
-          <Card>
-            <Statistic title="监测城市" value={0} suffix="座" />
-          </Card>
-        </Col>
-
-        <Col span={6}>
-          <Card>
-            <Statistic title="平均 AQI" value={0} />
-          </Card>
-        </Col>
-
-        <Col span={6}>
-          <Card>
-            <Statistic title="待处理事件" value={0} suffix="件" />
-          </Card>
-        </Col>
-
-        <Col span={6}>
-          <Card>
-            <Statistic title="事件处理率" value={0} suffix="%" />
-          </Card>
-        </Col>
-      </Row>
-    </>
-  )
+//初始化空值
+const emptyOverview: CityOverview = {
+    totalCities: 0,
+    avgCongestionIndex: null,
+    avgAqi: null,
+    avgPM25: null,
+    avgTemperature: null,
+    avgSpeed: null,
+    pendingEvents: 0,
+    eventProcessRate: 0,
+}
+const emptyEventStats: EventStats = {
+    total: 0,
+    byType: [],
+    bySeverity: [],
+    byStatus: [],
 }
 
+function Dashboard() {
+    const [overview, setOverview] = useState<CityOverview>(emptyOverview)
+    const [eventStats, setEventStats] = useState<EventStats>(emptyEventStats)
+    const [facilityStats, setFacilityStats] = useState<FacilityStat[]>([])
+    const [trafficRanking, setTrafficRanking] = useState<TrafficRankingItem[]>([])
+
+    const [loading, setLoading] = useState(false)
+
+    const loadDashboard = useCallback(async (showMessage = false) => {
+        setLoading(true)
+        try {
+            const [overviewResult, eventStatsResult, facilityStatsResult, trafficRankingResult] = await Promise.all([
+                dashboardService.getOverview(),
+                dashboardService.getEventStats(),
+                dashboardService.getFacilityStats(),
+                dashboardService.getTrafficRanking(),
+            ])
+
+            setOverview(overviewResult.data)
+            setEventStats(eventStatsResult.data)
+            setFacilityStats(facilityStatsResult.data)
+            setTrafficRanking(trafficRankingResult.data)
+
+            if (showMessage) {
+                message.success('获取数据成功')
+            }
+        } catch (error) {
+            console.error(error, 'Failed to load dashboard overview')
+            message.error('获取数据失败')
+        } finally {
+            setLoading(false)
+        }
+
+    }, [])
+    useEffect(() => {
+        void loadDashboard()
+
+        //每五分钟刷新一次
+        const timer = window.setInterval(() => {
+            void loadDashboard()
+        }, 300000)
+
+        return () => clearInterval(timer)
+    }, [loadDashboard])
+
+    const overviewItems = useMemo(() => [
+        {
+            title: '监测城市',
+            value: overview.totalCities,
+            suffix: '座',
+            color: '#1677ff',
+        },
+        {
+            title: '拥堵指数',
+            value: overview.avgCongestionIndex ?? 0,
+            suffix: '',
+            color: '#fa8c16',
+        },
+        {
+            title: '平均 AQI',
+            value: overview.avgAqi ?? 0,
+            suffix: '',
+            color: '#722ed1',
+        },
+        {
+            title: '平均 PM2.5',
+            value: overview.avgPM25 ?? 0,
+            suffix: '',
+            color: '#13c2c2',
+        },
+        {
+            title: '平均温度',
+            value: overview.avgTemperature ?? 0,
+            suffix: '°C',
+            color: '#eb2f96',
+        },
+        {
+            title: '平均车速',
+            value: overview.avgSpeed ?? 0,
+            suffix: 'km/h',
+            color: '#52c41a',
+        },
+        {
+            title: '待处理事件',
+            value: overview.pendingEvents,
+            suffix: '件',
+            color: '#faad14',
+        },
+        {
+            title: '事件处理率',
+            value: overview.eventProcessRate,
+            suffix: '%',
+            color: '#2f54eb',
+        },
+    ],
+        [overview])
+    //公共设施统计
+    const facilityOption = useMemo<EChartsOption>(
+        () => ({
+            tooltip: {
+                trigger: "axis",
+            },
+            xAxis: {
+                type: 'category',
+                data: facilityStats.map(item => item.type),
+            },
+            yAxis: {
+                type: 'value',
+                name: '数量',
+            },
+            series: [
+                {
+                    type: 'bar',
+                    data: facilityStats.map(item => item.count),
+                    itemStyle: {
+                        color: '#1677ff',
+                    },
+                }
+            ]
+
+        }), [facilityStats])
+    //交通情况
+    const trafficOption = useMemo<EChartsOption>(() => {
+        const list = [...trafficRanking].reverse()
+
+        return {
+            tooltip: {
+                trigger: 'axis',
+            },
+
+            xAxis: {
+                type: 'value',
+                max: 10,
+                name: '拥堵指数',
+            },
+
+            yAxis: {
+                type: 'category',
+                data: list.map((item) => item.name),
+            },
+
+            series: [
+                {
+                    type: 'bar',
+                    data: list.map((item) => item.value),
+                    itemStyle: {
+                        color: '#fa8c16',
+                    },
+                },
+            ],
+        }
+    }, [trafficRanking])
+    const eventOption = useMemo<EChartsOption>(
+        () => ({
+            tooltip: {
+                trigger: 'item',
+            },
+            legend: {
+                bottom: 0,
+            },
+            series: [
+                {
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    data: eventStats.byType.map(item => ({
+                        name: item.type,
+                        value: item.count,
+                    })),
+                    label: {
+                        formatter: '{b}:{d}%',
+                    }
+                }
+            ]
+        }), [eventStats])
+    return (
+        <Spin spinning={loading}>
+            <Space
+                orientation='vertical'
+                size="large"
+                style={{ width: '100%' }}
+            >
+                <div className='dashboard-header'>
+                    <Typography.Title
+                        level={2}
+                        style={{ marginBottom: 0 }}
+                    >
+                        数据仪表盘
+
+                    </Typography.Title>
+                    <Button
+                        icon={<ReloadOutlined />}
+                        onClick={() => void loadDashboard(true)}
+                    >
+                        刷新
+                    </Button>
+                </div>
+                <Row
+                    gutter={[16, 16]}
+                >
+                    {overviewItems.map((item) => (
+                        <Col span={6} key={item.title}>
+                            <Card>
+                                <Statistic
+                                    title={item.title}
+                                    value={item.value}
+                                    suffix={item.suffix}
+                                    precision={
+                                        Number.isInteger(item.value) ? 0 : 1
+                                    }
+                                    valueStyle={{ color: item.color }}
+                                ></Statistic>
+                            </Card>
+                        </Col>
+                    ))}
+                </Row>
+                <Row gutter={[16, 16]}>
+                    <Col span={24}>
+                        <Card title="公共设施统计">
+                            <ChartRenderer option={facilityOption} />
+                        </Card>
+                    </Col>
+                </Row>
+                <Row gutter={[16, 16]}>
+                    <Col span={12}>
+                        <Card title="交通拥堵排行">
+                            <ChartRenderer option={trafficOption} />
+                        </Card>
+                    </Col>
+
+                    <Col span={12}>
+                        <Card title="城市事件分类">
+                            <ChartRenderer option={eventOption} />
+                        </Card>
+                    </Col>
+                </Row>
+            </Space>
+        </Spin>
+    )
+}
 export default Dashboard
