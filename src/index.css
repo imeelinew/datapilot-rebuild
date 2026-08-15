@@ -1,0 +1,102 @@
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family:
+    Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: #1f2937;
+  background: #f5f7fa;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.main-layout {
+  min-height: 100vh;
+}
+
+.logo {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.main-header {
+  height: 64px;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+  justify-content: space-between;
+}
+
+.main-content {
+  margin: 16px;
+  padding: 24px;
+  min-height: calc(100vh - 96px);
+  background: white;
+  border-radius: 8px;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(135deg, #0f172a, #1d4ed8);
+}
+
+.login-card {
+  width: 380px;
+}
+
+.captcha-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.captcha-row .ant-input {
+  flex: 1;
+}
+
+.captcha-image {
+  width: 120px;
+  height: 40px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  cursor: pointer;
+  background: white;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+}
+
+.captcha-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
