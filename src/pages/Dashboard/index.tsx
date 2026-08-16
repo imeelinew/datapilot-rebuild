@@ -14,10 +14,14 @@ import {
     Statistic,
     Typography,
     message,
+    Table,
+    Tag,
+    type TableColumnsType
 } from 'antd'
-import { ReloadOutlined } from '@ant-design/icons'
+import { ReloadOutlined, DownloadOutlined } from '@ant-design/icons'
+import { downloadFile } from '@/utils/download'
 import dashboardService from '@/api/dashboard'
-import type { CityOverview, EventStats, FacilityStat, TrafficRankingItem } from '@/types/dashboard'
+import type { CityOverview, EventStats, FacilityStat, TrafficRankingItem, CityEvent } from '@/types/dashboard'
 //渲染图表
 import type { EChartsOption } from 'echarts'
 import ChartRenderer from '@/components/ChartRenderer'
@@ -39,29 +43,46 @@ const emptyEventStats: EventStats = {
     bySeverity: [],
     byStatus: [],
 }
+//状态级别颜色
+function getSeverityColor(severity: string) {
+    if (severity === '紧急') return 'red'
+    if (severity === '高') return 'orange'
+    if (severity === '中') return 'gold'
+
+    return 'blue'
+}
+function getStatusColor(status: string) {
+    if (status === '已处理') return 'green'
+    if (status === '处理中') return 'processing'
+
+    return 'default'
+}
 
 function Dashboard() {
     const [overview, setOverview] = useState<CityOverview>(emptyOverview)
     const [eventStats, setEventStats] = useState<EventStats>(emptyEventStats)
     const [facilityStats, setFacilityStats] = useState<FacilityStat[]>([])
     const [trafficRanking, setTrafficRanking] = useState<TrafficRankingItem[]>([])
+    const [latestEvents, setLatestEvents] = useState<CityEvent[]>([])
 
     const [loading, setLoading] = useState(false)
 
     const loadDashboard = useCallback(async (showMessage = false) => {
         setLoading(true)
         try {
-            const [overviewResult, eventStatsResult, facilityStatsResult, trafficRankingResult] = await Promise.all([
+            const [overviewResult, eventStatsResult, facilityStatsResult, trafficRankingResult, latestEventsResult] = await Promise.all([
                 dashboardService.getOverview(),
                 dashboardService.getEventStats(),
                 dashboardService.getFacilityStats(),
                 dashboardService.getTrafficRanking(),
+                dashboardService.getLatestEvents(),
             ])
 
             setOverview(overviewResult.data)
             setEventStats(eventStatsResult.data)
             setFacilityStats(facilityStatsResult.data)
             setTrafficRanking(trafficRankingResult.data)
+            setLatestEvents(latestEventsResult.data.list)
 
             if (showMessage) {
                 message.success('获取数据成功')
@@ -84,7 +105,30 @@ function Dashboard() {
 
         return () => clearInterval(timer)
     }, [loadDashboard])
+    const [exporting, setExporting] = useState('')
+    //导出方法
+    async function handleExport(exportType: 'cities' | 'events') {
+        setExporting(exportType)
 
+        try {
+            await downloadFile(
+                exportType === 'cities'
+                    ? '/export/cities'
+                    : '/export/events',
+
+                exportType === 'cities'
+                    ? '城市数据.csv'
+                    : '城市事件.csv',
+            )
+
+            message.success('导出成功')
+        } catch (error) {
+            console.error(error, 'Failed to export data')
+            message.error('导出失败')
+        } finally {
+            setExporting('')
+        }
+    }
     const overviewItems = useMemo(() => [
         {
             title: '监测城市',
@@ -214,6 +258,54 @@ function Dashboard() {
                 }
             ]
         }), [eventStats])
+    const eventColumns: TableColumnsType<CityEvent> = [
+        {
+            title: '事件',
+            dataIndex: 'title',
+            key: 'title',
+        },
+        {
+            title: '城市',
+            dataIndex: 'city',
+            key: 'city',
+            render: (city: CityEvent['city']) =>
+                city?.name || '-',
+        },
+        {
+            title: '类型',
+            dataIndex: 'eventType',
+            key: 'eventType',
+        },
+        {
+            title: '级别',
+            dataIndex: 'severity',
+            key: 'severity',
+            render: (severity: string) => (
+                <Tag color={getSeverityColor(severity)}>
+                    {severity}
+                </Tag>
+            ),
+        },
+        {
+            title: '状态',
+            dataIndex: 'status',
+            key: 'status',
+            render: (status: string) => (
+                <Tag color={getStatusColor(status)}>
+                    {status}
+                </Tag>
+            ),
+        },
+        {
+            title: '上报时间',
+            dataIndex: 'reportedAt',
+            key: 'reportedAt',
+            render: (time: string) =>
+                time
+                    ? new Date(time).toLocaleString('zh-CN')
+                    : '-',
+        },
+    ]
     return (
         <Spin spinning={loading}>
             <Space
@@ -229,12 +321,28 @@ function Dashboard() {
                         数据仪表盘
 
                     </Typography.Title>
-                    <Button
-                        icon={<ReloadOutlined />}
-                        onClick={() => void loadDashboard(true)}
-                    >
-                        刷新
-                    </Button>
+                    <Space>
+                        <Button
+                            icon={<ReloadOutlined />}
+                            onClick={() => void loadDashboard(true)}
+                        >
+                            刷新
+                        </Button>  <Button
+                            icon={<DownloadOutlined />}
+                            loading={exporting === 'cities'}
+                            onClick={() => void handleExport('cities')}
+                        >
+                            导出城市
+                        </Button>
+
+                        <Button
+                            icon={<DownloadOutlined />}
+                            loading={exporting === 'events'}
+                            onClick={() => void handleExport('events')}
+                        >
+                            导出事件
+                        </Button>
+                    </Space>
                 </div>
                 <Row
                     gutter={[16, 16]}
@@ -275,6 +383,15 @@ function Dashboard() {
                         </Card>
                     </Col>
                 </Row>
+                <Card title="最新城市事件">
+                    <Table<CityEvent>
+                        rowKey="id"
+                        columns={eventColumns}
+                        dataSource={latestEvents}
+                        loading={loading}
+                        pagination={false}
+                    />
+                </Card>
             </Space>
         </Spin>
     )

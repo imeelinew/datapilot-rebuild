@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Layout, Menu, Button, Space, message, Breadcrumb } from 'antd'
+import { Layout, Menu, Button, Space, message, Breadcrumb,type MenuProps } from 'antd'
 import {
     BlockOutlined,
     DashboardOutlined,
@@ -148,7 +148,11 @@ function MainLayout() {
                 <Menu
                     theme="light"
                     mode="inline"
-                    items={menuItems}
+                    //这里如果使用items={menuItems}会报错
+                    //因为menuItems 使用的是我们自己定义的 MenuNode[]，方便面包屑递归查找。
+                    //Menu 的 items 要求 Ant Design 自己的菜单类型。
+                    //两者实际数据结构兼容，但 TypeScript 不确定，所以在传入组件时明确告诉它类型。
+                    items={menuItems as MenuProps['items']}
                     selectedKeys={[selectedKey]}
                     defaultOpenKeys={defaultOpenKeys}
                     onClick={(item) => navigate(item.key)}
