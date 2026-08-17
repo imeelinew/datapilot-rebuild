@@ -38,3 +38,13 @@ export type DashboardInput = {
 }
 
 export type DashboardResult = ApiResult<DashboardItem>
+
+//仪表盘详情
+export type DashboardDetail =
+  DashboardItem & {
+    charts: Array<Record<string, unknown>>
+    mapLayers: Array<Record<string, unknown>>
+  }
+
+export type DashboardDetailResult =
+  ApiResult<DashboardDetail>

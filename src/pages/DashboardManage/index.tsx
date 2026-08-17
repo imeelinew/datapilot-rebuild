@@ -18,10 +18,10 @@ import {
   Select,
   Popconfirm
 } from 'antd'
-import { CopyOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined, PlusOutlined } from '@ant-design/icons'
+import { CopyOutlined, DeleteOutlined, SearchOutlined, ReloadOutlined, PlusOutlined, EyeOutlined } from '@ant-design/icons'
 const { Title, Text, Paragraph } = Typography
 import type { DashboardInput, DashboardItem } from '@/types/dashboardManage'
-
+import { useNavigate } from 'react-router-dom'
 function DashboardManage() {
   const [dashboards, setDashboards] = useState<DashboardItem[]>([])
   const [loading, setLoading] = useState(false)
@@ -33,7 +33,8 @@ function DashboardManage() {
   const [creating, setCreating] = useState(false)
   //复制和删除 都是拿id
   const [actionId, setActionId] = useState<number | null>(null)
-
+  //查看仪表盘功能
+  const navigate = useNavigate()
 
   const [form] = Form.useForm<DashboardInput>()
 
@@ -187,6 +188,16 @@ function DashboardManage() {
                     </Tag>
                   }
                   actions={[
+                    <Button
+                      type="text"
+                      icon={<EyeOutlined />}
+                      onClick={() =>
+                        navigate(`/data/dashboards/${item.id}`)
+                      }
+                      key="view"
+                    >
+                      查看
+                    </Button>,
                     <Button
                       type="text"
                       icon={<CopyOutlined />}

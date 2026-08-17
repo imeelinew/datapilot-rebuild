@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import MainLayout from '../layouts/MainLayout'
 import Login from '../pages/Login'
 import Dashboard from '../pages/Dashboard'
+import DashboardDetail from '../pages/DashboardDetail'
 import RequireAuth, { GuestOnly } from '../components/RequireAuth'
 import DashboardManage from '../pages/DashboardManage'
 import ChartManage from '../pages/ChartManage'
@@ -31,6 +32,10 @@ function AppRouter() {
                 />
 
                 <Route path="dashboard" element={<Dashboard />} />
+                <Route
+                    path="data/dashboards/:id"
+                    element={<DashboardDetail />}
+                />
                 <Route path="data/dashboards" element={<DashboardManage />} />
                 <Route path="data/charts" element={<ChartManage />} />
                 <Route path="visual/map" element={<MapView />} />

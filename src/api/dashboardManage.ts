@@ -1,6 +1,6 @@
 import request from "../utils/request"
 
-import type { DashboardPageResult, PageParams, DashboardInput, DashboardResult } from "../types/dashboardManage"
+import type { DashboardPageResult, PageParams, DashboardInput, DashboardResult, DashboardDetailResult } from "../types/dashboardManage"
 
 export const dashboardManageService = {
     getList(params: PageParams) {
@@ -24,6 +24,10 @@ export const dashboardManageService = {
         return request.delete(
             `/dashboards/${id}`
         )
+    },
+    getDetail(id: number) {
+        return request.get(
+            `/dashboards/${id}/detail`
+        ) as Promise<DashboardDetailResult>
     }
-
 }
