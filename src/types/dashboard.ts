@@ -1,5 +1,17 @@
 import type { ApiResult } from './auth'
 
+export interface City {
+  id: number
+  name: string
+  province: string
+  population: number
+  area: number
+  gdp: number | null
+  lng: number
+  lat: number
+  createdAt: string
+}
+
 export interface CityOverview {
   totalCities: number
   avgCongestionIndex: number | null
@@ -62,6 +74,8 @@ export interface CityEventPage {
 }
 
 export type OverviewResult = ApiResult<CityOverview>
+
+export type CityListResult = ApiResult<City[]>
 
 export type FacilityResult = ApiResult<FacilityStat[]>
 

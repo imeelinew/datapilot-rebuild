@@ -140,6 +140,7 @@ function MainLayout() {
                         fontSize: collapsed ? 16 : 18,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
+                        color: '#57B9FF',
                     }}
                 >
                     {collapsed ? 'DP' : 'DataPilot'}

@@ -39,12 +39,51 @@ export type DashboardInput = {
 
 export type DashboardResult = ApiResult<DashboardItem>
 
+export type ChartQueryConfig = {
+    sql?: string
+    table?: string
+    endpoint?: string
+    xField?: string
+    yField?: string
+    params?: Record<string, unknown>
+    refreshInterval?: number
+}
+
+export type DashboardChart = {
+    id: number
+    dashboardId: number
+    title: string
+    chartType: "line" | "bar" | "pie" | "scatter" | "table"
+    datasourceId: number | null
+    queryConfig: ChartQueryConfig | null
+    chartConfig: Record<string, unknown>
+    position: Record<string, unknown>
+    sortOrder: number
+    createdAt: string
+    updatedAt: string
+}
+
+export type QueryColumn = {
+    columnName: string
+    dataType: string
+}
+
+export type DatasourceQueryData = {
+    columns: QueryColumn[]
+    rows: Array<Record<string, unknown>>
+    total: number
+    sql: string
+}
+
+export type DatasourceQueryResult =
+    ApiResult<DatasourceQueryData>
+
 //仪表盘详情
 export type DashboardDetail =
-  DashboardItem & {
-    charts: Array<Record<string, unknown>>
-    mapLayers: Array<Record<string, unknown>>
-  }
+    DashboardItem & {
+        charts: DashboardChart[]
+        mapLayers: Array<Record<string, unknown>>
+    }
 
 export type DashboardDetailResult =
-  ApiResult<DashboardDetail>
+    ApiResult<DashboardDetail>

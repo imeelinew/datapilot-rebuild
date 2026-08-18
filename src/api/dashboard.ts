@@ -1,5 +1,6 @@
 import request from '@/utils/request'
 import type {
+    CityListResult,
     CityEventPageResult,
     EventStatsResult,
     FacilityResult,
@@ -8,6 +9,12 @@ import type {
 } from '@/types/dashboard'
 
 const dashboardService = {
+    getCities() {
+        return request.get(
+            '/cities',
+        ) as Promise<CityListResult>
+    },
+
     getOverview() {
         return request.get(
             '/cities/overview',

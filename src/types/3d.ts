@@ -5,6 +5,7 @@ export type GlowRingProps = {
     color?: string
     opacity?: number
 }
+
 export type CityColumnProps = {
     name: string
     value: string

@@ -27,7 +27,8 @@ export const dashboardManageService = {
     },
     getDetail(id: number) {
         return request.get(
-            `/dashboards/${id}/detail`
+            `/dashboards/${id}`
         ) as Promise<DashboardDetailResult>
     }
 }
+export default dashboardManageService
