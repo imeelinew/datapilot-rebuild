@@ -1,7 +1,7 @@
 export async function onRequest(context) {
   const incoming = context.request;
   const url = new URL(incoming.url);
-  const target = `http://116.62.230.90${url.pathname}${url.search}`;
+  const target = `http://city-api.elinew.tech${url.pathname}${url.search}`;
 
   const headers = new Headers(incoming.headers);
   headers.delete("host");
