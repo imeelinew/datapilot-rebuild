@@ -3,6 +3,7 @@ import type {
     CityListResult,
     CityEventPageResult,
     EventStatsResult,
+    EnvironmentResult,
     FacilityResult,
     OverviewResult,
     TrafficRankingResult,
@@ -46,6 +47,12 @@ const dashboardService = {
                 pageSize: 8,
             },
         }) as Promise<CityEventPageResult>
+    },
+
+    getCityEnvironment(id: number) {
+        return request.get(
+            `/cities/${id}/environment`,
+        ) as Promise<EnvironmentResult>
     },
 }
 

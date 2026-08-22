@@ -106,3 +106,152 @@ select {
   align-items: center;
   justify-content: space-between;
 }
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.center-state {
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c8c8c;
+}
+
+.wizard-actions {
+  margin-top: 24px;
+  padding-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.amap-view .amap-container {
+  width: 100%;
+  height: 100%;
+}
+
+.city-marker {
+  padding: 5px 9px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  background: #1677ff;
+  border: 2px solid white;
+  border-radius: 14px;
+  box-shadow: 0 3px 10px rgb(22 119 255 / 35%);
+  transform: translate(-50%, -100%);
+}
+
+.map-info {
+  min-width: 150px;
+  line-height: 1.8;
+}
+
+.ai-layout {
+  height: calc(100vh - 144px);
+  min-height: 560px;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.ai-sidebar,
+.ai-main {
+  height: 100%;
+  overflow: hidden;
+}
+
+.ai-sidebar .ant-card-body {
+  height: calc(100% - 57px);
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.ai-sidebar .ant-list-item {
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ai-history-active {
+  background: rgb(22 119 255 / 10%);
+}
+
+.ai-main .ant-card-body {
+  height: calc(100% - 57px);
+  display: flex;
+  flex-direction: column;
+}
+
+.ai-messages {
+  flex: 1;
+  padding-right: 8px;
+  overflow-y: auto;
+}
+
+.ai-message {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ai-message-user {
+  flex-direction: row-reverse;
+}
+
+.ai-avatar {
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: #1677ff;
+  border-radius: 50%;
+}
+
+.ai-message-assistant .ai-avatar {
+  background: #722ed1;
+}
+
+.ai-bubble {
+  max-width: min(760px, 78%);
+  padding: 10px 14px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  background: rgb(127 127 127 / 10%);
+  border-radius: 12px;
+}
+
+.ai-message-user .ai-bubble {
+  color: white;
+  background: #1677ff;
+}
+
+.ai-input {
+  margin-top: 16px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .ai-layout {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .ai-sidebar {
+    height: 240px;
+  }
+
+  .ai-main {
+    height: 620px;
+  }
+}

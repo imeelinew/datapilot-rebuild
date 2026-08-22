@@ -2,9 +2,15 @@ import type { ReactNode } from "react";
 export interface User {
     id?: number | string
     username?: string
+    email?: string | null
     roleCode?: string
     role?: Role
-    avatar?: string
+    avatar?: string | null
+    status?: number
+    roleId?: number
+    lastLogin?: string | null
+    createdAt?: string
+    updatedAt?: string
 }
 export interface AuthState {
     token: string
@@ -14,6 +20,8 @@ export interface Role {
     id?: number
     name?: string
     code?: string
+    description?: string | null
+    status?: number
 }
 export interface LoginFormValues {
     username: string

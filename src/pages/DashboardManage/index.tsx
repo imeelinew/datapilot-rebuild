@@ -48,7 +48,7 @@ function DashboardManage() {
         keyword: searchKeyword || undefined
       })
       setDashboards(result.data.list)
-    } catch (error) {
+    } catch {
       message.error('获取仪表盘列表失败')
     } finally {
       setLoading(false)

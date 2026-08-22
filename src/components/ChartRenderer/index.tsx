@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
 import * as echarts from 'echarts'
 import type { ChartRendererProps } from "@/types/chart";
+import { useSelector } from 'react-redux'
+import type { RootState } from '@/store'
 
 function ChartRenderer({
     option,
     height = 320
 }: ChartRendererProps) {
     const containerRef = useRef<HTMLDivElement>(null)
+    const currentTheme = useSelector((state: RootState) => state.app.theme)
 
     const chartRef = useRef<echarts.ECharts | null>(null)
 
@@ -14,7 +17,10 @@ function ChartRenderer({
         if (!containerRef.current) {
             return
         }
-        const chart = echarts.init(containerRef.current)
+        const chart = echarts.init(
+            containerRef.current,
+            currentTheme === 'dark' ? 'dark' : undefined,
+        )
         chartRef.current = chart
 
         // function handleResize() {
@@ -40,14 +46,14 @@ function ChartRenderer({
             chart.dispose()
             chartRef.current = null
         }
-    }, [])
+    }, [currentTheme])
     useEffect(() => {
         if (!chartRef.current) {
             return
         }
 
         chartRef.current.setOption(option)
-    }, [option])
+    }, [currentTheme, option])
 
     return (
         <div

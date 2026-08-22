@@ -1,21 +1,26 @@
+import { lazy, Suspense } from 'react'
+import { Spin } from 'antd'
 import { Navigate, Route, Routes } from 'react-router-dom'
-import MainLayout from '../layouts/MainLayout'
-import Login from '../pages/Login'
-import Dashboard from '../pages/Dashboard'
-import DashboardDetail from '../pages/DashboardDetail'
 import RequireAuth, { GuestOnly } from '../components/RequireAuth'
-import DashboardManage from '../pages/DashboardManage'
-import ChartManage from '../pages/ChartManage'
-import MapView from '../pages/MapView'
-import Scene3D from '../pages/Scene3D'
-import AIChat from '../pages/AIChat'
-import UserManage from '../pages/UserManage'
-import RoleManage from '../pages/RoleManage'
-import Profile from '../pages/Profile'
+
+const MainLayout = lazy(() => import('../layouts/MainLayout'))
+const Login = lazy(() => import('../pages/Login'))
+const Dashboard = lazy(() => import('../pages/Dashboard'))
+const DashboardDetail = lazy(() => import('../pages/DashboardDetail'))
+const DashboardManage = lazy(() => import('../pages/DashboardManage'))
+const ChartManage = lazy(() => import('../pages/ChartManage'))
+const ChartEditor = lazy(() => import('../pages/ChartEditor'))
+const MapView = lazy(() => import('../pages/MapView'))
+const Scene3D = lazy(() => import('../pages/Scene3D'))
+const AIChat = lazy(() => import('../pages/AIChat'))
+const UserManage = lazy(() => import('../pages/UserManage'))
+const RoleManage = lazy(() => import('../pages/RoleManage'))
+const Profile = lazy(() => import('../pages/Profile'))
 
 function AppRouter() {
     return (
-        <Routes>
+        <Suspense fallback={<Spin fullscreen description="页面加载中" />}>
+          <Routes>
             <Route path="/login" element={
                 <GuestOnly>
                     <Login />
@@ -38,6 +43,11 @@ function AppRouter() {
                 />
                 <Route path="data/dashboards" element={<DashboardManage />} />
                 <Route path="data/charts" element={<ChartManage />} />
+                <Route path="data/charts/new" element={<ChartEditor />} />
+                <Route
+                    path="data/charts/:id/edit"
+                    element={<ChartEditor />}
+                />
                 <Route path="visual/map" element={<MapView />} />
                 <Route path="visual/scene" element={<Scene3D />} />
                 <Route path="ai" element={<AIChat />} />
@@ -49,7 +59,8 @@ function AppRouter() {
                 path="*"
                 element={<Navigate to="/dashboard" replace />}
             />
-        </Routes>
+          </Routes>
+        </Suspense>
     )
 }
 export default AppRouter;

@@ -66,6 +66,20 @@ export interface CityEvent {
   }
 }
 
+export interface EnvironmentItem {
+  id: number
+  cityId: number
+  district: string
+  aqi: number
+  pm25: number
+  pm10: number
+  temperature: number
+  humidity: number
+  noise: number
+  weather: string
+  recordedAt: string
+}
+
 export interface CityEventPage {
   list: CityEvent[]
   total: number
@@ -86,3 +100,5 @@ export type EventStatsResult = ApiResult<EventStats>
 
 export type CityEventPageResult =
   ApiResult<CityEventPage>
+
+export type EnvironmentResult = ApiResult<EnvironmentItem[]>

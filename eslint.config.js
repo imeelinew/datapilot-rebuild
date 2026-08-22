@@ -18,5 +18,9 @@ export default defineConfig([
     languageOptions: {
       globals: globals.browser,
     },
+    rules: {
+      // 页面首次进入时请求接口并更新 loading/data 是本项目的正常写法。
+      'react-hooks/set-state-in-effect': 'off',
+    },
   },
 ])

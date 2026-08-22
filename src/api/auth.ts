@@ -4,6 +4,7 @@ import type {
   CaptchaData,
   LoginData,
   LoginParams,
+  User,
 } from '@/types/auth'
 
 const authService = {
@@ -17,6 +18,10 @@ const authService = {
     return request.post('/auth/login', data) as Promise<
       ApiResult<LoginData>
     >
+  },
+
+  getMe() {
+    return request.get('/auth/me') as Promise<ApiResult<User>>
   },
 }
 
