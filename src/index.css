@@ -12,10 +12,12 @@ body,
 
 body {
   font-family:
-    Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+    Inter, "PingFang SC", "Microsoft YaHei", system-ui, -apple-system,
+    BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: #1f2937;
-  background: #f5f7fa;
+  background: #f4f6f8;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 button,
@@ -27,6 +29,10 @@ select {
 
 .main-layout {
   min-height: 100vh;
+}
+
+.main-layout .ant-layout-sider {
+  border-right: 1px solid rgb(127 127 127 / 14%);
 }
 
 .logo {
@@ -45,17 +51,15 @@ select {
   display: flex;
   align-items: center;
   gap: 16px;
-  background: white;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgb(127 127 127 / 14%);
   justify-content: space-between;
 }
 
 .main-content {
-  margin: 16px;
-  padding: 24px;
+  margin: 20px 24px 24px;
+  padding: 0;
   min-height: calc(100vh - 96px);
-  background: white;
-  border-radius: 8px;
+  background: transparent !important;
 }
 
 .login-page {
@@ -63,12 +67,13 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
-  background:
-    linear-gradient(135deg, #0f172a, #1d4ed8);
+  padding: 24px;
+  background: #eef2f6;
 }
 
 .login-card {
   width: 380px;
+  border: 1px solid #dfe5ec;
 }
 
 .captcha-row {
@@ -108,10 +113,69 @@ select {
 }
 
 .page-header {
+  min-height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+.page-header .ant-typography,
+.dashboard-header .ant-typography {
+  letter-spacing: -0.01em;
+}
+
+.page-header h3.ant-typography,
+.dashboard-header h3.ant-typography {
+  font-size: 22px;
+  font-weight: 650;
+}
+
+.ant-card {
+  box-shadow: none;
+}
+
+.ant-card .ant-card-head {
+  border-bottom-color: rgb(127 127 127 / 14%);
+}
+
+.ant-btn,
+.ant-input,
+.ant-input-affix-wrapper,
+.ant-select-selector {
+  box-shadow: none !important;
+}
+
+.ant-table-wrapper {
+  overflow: hidden;
+  border: 1px solid rgb(127 127 127 / 16%);
+  border-radius: 10px;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  padding-top: 14px;
+  padding-bottom: 14px;
+}
+
+.ant-statistic .ant-statistic-title {
+  margin-bottom: 8px;
+  font-size: 13px;
+}
+
+.ant-statistic .ant-statistic-content {
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.user-avatar {
+  color: #315f9f;
+  background: #e8eef7;
+  border: 1px solid #d9e2ef;
 }
 
 .center-state {
@@ -145,13 +209,17 @@ select {
   background: #1677ff;
   border: 2px solid white;
   border-radius: 14px;
-  box-shadow: 0 3px 10px rgb(22 119 255 / 35%);
   transform: translate(-50%, -100%);
 }
 
 .map-info {
   min-width: 150px;
   line-height: 1.8;
+}
+
+.amap-view {
+  overflow: hidden;
+  border: 1px solid rgb(127 127 127 / 16%);
 }
 
 .ai-layout {

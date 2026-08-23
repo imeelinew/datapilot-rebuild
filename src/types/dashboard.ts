@@ -6,7 +6,7 @@ export interface City {
   province: string
   population: number
   area: number
-  gdp: number | null
+  gdp: number | string | null
   lng: number
   lat: number
   createdAt: string

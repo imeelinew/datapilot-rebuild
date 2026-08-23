@@ -172,7 +172,7 @@ function MainLayout() {
                         fontSize: collapsed ? 16 : 18,
                         whiteSpace: 'nowrap',
                         overflow: 'hidden',
-                        color: '#57B9FF',
+                        color: token.colorPrimary,
                     }}
                 >
                     {collapsed ? '城' : '城市视图'}

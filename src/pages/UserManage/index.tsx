@@ -1,15 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 import {
-  Button, Card, Form, Input, Modal, Popconfirm, Select, Space,
+  Avatar, Button, Card, Form, Input, Modal, Popconfirm, Select, Space,
   Switch, Table, Tag, Typography, message, type TableColumnsType,
 } from 'antd'
 import {
   DeleteOutlined, EditOutlined, KeyOutlined, PlusOutlined,
-  ReloadOutlined, SearchOutlined,
+  ReloadOutlined, SearchOutlined, UserOutlined,
 } from '@ant-design/icons'
 import { roleService, userService } from '@/api/admin'
 import type { AdminRole, UserInput } from '@/types/admin'
 import type { User } from '@/types/auth'
+import { resolveAvatarUrl } from '@/utils/avatar'
 
 function UserManage() {
   const [form] = Form.useForm<UserInput>()
@@ -132,6 +133,21 @@ function UserManage() {
   const columns: TableColumnsType<User> = [
     { title: 'ID', dataIndex: 'id', width: 80 },
     { title: '用户名', dataIndex: 'username' },
+    {
+      title: '头像',
+      dataIndex: 'avatar',
+      width: 80,
+      align: 'center',
+      render: (value: User['avatar'], record) => (
+        <Avatar
+          size={34}
+          src={resolveAvatarUrl(value)}
+          icon={<UserOutlined />}
+          alt={record.username || '用户头像'}
+          className="user-avatar"
+        />
+      ),
+    },
     { title: '邮箱', dataIndex: 'email', render: (value) => value || '-' },
     {
       title: '角色',

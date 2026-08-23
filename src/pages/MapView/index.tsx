@@ -62,6 +62,38 @@ function getAqiLevel(aqi: number) {
   return aqiLevels.find((item) => aqi <= item.max) || aqiLevels[0]
 }
 
+function toNumber(value: number | string | null | undefined) {
+  const number = Number(value)
+  return Number.isFinite(number) ? number : 0
+}
+
+function getGdpDisplay(value: number | string | null | undefined) {
+  const number = toNumber(value)
+
+  if (number >= 10000) {
+    return {
+      value: number / 10000,
+      suffix: '万亿元',
+      precision: 2,
+    }
+  }
+
+  return {
+    value: number,
+    suffix: '亿元',
+    precision: Number.isInteger(number) ? 0 : 1,
+  }
+}
+
+function formatGdp(value: number | string | null | undefined) {
+  if (value === null || value === undefined || value === '') return '-'
+  const display = getGdpDisplay(value)
+  return `${display.value.toLocaleString('zh-CN', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: display.precision,
+  })} ${display.suffix}`
+}
+
 function MapView() {
   const mapContainerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MapInstance | null>(null)
@@ -182,7 +214,7 @@ function MapView() {
         marker.on('click', () => {
           setSelectedCity(city)
           const infoWindow = new AMap.InfoWindow({
-            content: `<div class="map-info"><strong>${city.name}</strong><br/>人口：${city.population} 万人<br/>GDP：${city.gdp ?? '-'} 亿元</div>`,
+            content: `<div class="map-info"><strong>${city.name}</strong><br/>人口：${city.population.toLocaleString('zh-CN')} 万人<br/>GDP：${formatGdp(city.gdp)}</div>`,
             offset: [0, -16],
           })
           infoWindow.open(map, position)
@@ -224,6 +256,12 @@ function MapView() {
 
   const stats = useMemo(() => {
     const environmentCount = environmentList.length || 1
+    const totalGdp = cities.reduce(
+      (sum, item) => sum + toNumber(item.gdp),
+      0,
+    )
+    const gdpDisplay = getGdpDisplay(totalGdp)
+
     return [
       { title: '覆盖城市', value: cities.length, suffix: '座' },
       {
@@ -233,8 +271,9 @@ function MapView() {
       },
       {
         title: 'GDP',
-        value: cities.reduce((sum, item) => sum + (item.gdp || 0), 0),
-        suffix: '亿元',
+        value: gdpDisplay.value,
+        suffix: gdpDisplay.suffix,
+        precision: gdpDisplay.precision,
       },
       {
         title: '平均 AQI',
@@ -292,7 +331,7 @@ function MapView() {
                 <Statistic
                   title={item.title}
                   value={item.value}
-                  precision={Number.isInteger(item.value) ? 0 : 1}
+                  precision={item.precision ?? (Number.isInteger(item.value) ? 0 : 1)}
                   suffix={item.suffix}
                 />
               </Card>
@@ -340,7 +379,7 @@ function MapView() {
                   items={[
                     { key: 'province', label: '省份', children: selectedCity.province },
                     { key: 'population', label: '人口', children: `${selectedCity.population} 万人` },
-                    { key: 'gdp', label: 'GDP', children: `${selectedCity.gdp ?? '-'} 亿元` },
+                    { key: 'gdp', label: 'GDP', children: formatGdp(selectedCity.gdp) },
                     { key: 'weather', label: '天气', children: selectedEnvironment?.weather || '-' },
                     { key: 'aqi', label: 'AQI', children: selectedEnvironment?.aqi ?? '-' },
                     { key: 'pm25', label: 'PM2.5', children: selectedEnvironment?.pm25 ?? '-' },
