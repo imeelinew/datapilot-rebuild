@@ -81,6 +81,9 @@ function Login() {
         <div className='login-page'>
             <Card className='login-card'>
                 <Typography.Title level={3}>城市视图</Typography.Title>
+                <Typography.Paragraph type="secondary">
+                    城市数据可视化分析平台
+                </Typography.Paragraph>
 
                 <Form
                     layout='vertical'
