@@ -25,6 +25,7 @@ import { clearAuth } from '@/store/authSlice'
 import { toggleTheme } from '@/store/appSlice'
 import type { MenuNode } from '@/types/menu'
 import { filterMenus, getRoleCode } from '@/utils/permission'
+import AppErrorBoundary from '@/components/AppErrorBoundary'
 
 const { Header, Sider, Content } = Layout
 
@@ -234,7 +235,9 @@ function MainLayout() {
                     className="main-content"
                     style={{ background: token.colorBgContainer }}
                 >
-                    <Outlet />
+                    <AppErrorBoundary resetKey={location.pathname}>
+                        <Outlet />
+                    </AppErrorBoundary>
                 </Content>
             </Layout>
         </Layout>

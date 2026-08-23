@@ -1,21 +1,40 @@
-import { lazy, Suspense } from 'react'
+import { Suspense } from 'react'
 import { Spin } from 'antd'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import RequireAuth, { GuestOnly } from '../components/RequireAuth'
+import { lazyWithRetry } from '@/utils/lazyWithRetry'
 
-const MainLayout = lazy(() => import('../layouts/MainLayout'))
-const Login = lazy(() => import('../pages/Login'))
-const Dashboard = lazy(() => import('../pages/Dashboard'))
-const DashboardDetail = lazy(() => import('../pages/DashboardDetail'))
-const DashboardManage = lazy(() => import('../pages/DashboardManage'))
-const ChartManage = lazy(() => import('../pages/ChartManage'))
-const ChartEditor = lazy(() => import('../pages/ChartEditor'))
-const MapView = lazy(() => import('../pages/MapView'))
-const Scene3D = lazy(() => import('../pages/Scene3D'))
-const AIChat = lazy(() => import('../pages/AIChat'))
-const UserManage = lazy(() => import('../pages/UserManage'))
-const RoleManage = lazy(() => import('../pages/RoleManage'))
-const Profile = lazy(() => import('../pages/Profile'))
+const MainLayout = lazyWithRetry(() => import('../layouts/MainLayout'), 'layout')
+const Login = lazyWithRetry(() => import('../pages/Login'), 'login')
+const Dashboard = lazyWithRetry(() => import('../pages/Dashboard'), 'dashboard')
+const DashboardDetail = lazyWithRetry(
+    () => import('../pages/DashboardDetail'),
+    'dashboard-detail',
+)
+const DashboardManage = lazyWithRetry(
+    () => import('../pages/DashboardManage'),
+    'dashboard-manage',
+)
+const ChartManage = lazyWithRetry(
+    () => import('../pages/ChartManage'),
+    'chart-manage',
+)
+const ChartEditor = lazyWithRetry(
+    () => import('../pages/ChartEditor'),
+    'chart-editor',
+)
+const MapView = lazyWithRetry(() => import('../pages/MapView'), 'map')
+const Scene3D = lazyWithRetry(() => import('../pages/Scene3D'), 'scene-3d')
+const AIChat = lazyWithRetry(() => import('../pages/AIChat'), 'ai-chat')
+const UserManage = lazyWithRetry(
+    () => import('../pages/UserManage'),
+    'user-manage',
+)
+const RoleManage = lazyWithRetry(
+    () => import('../pages/RoleManage'),
+    'role-manage',
+)
+const Profile = lazyWithRetry(() => import('../pages/Profile'), 'profile')
 
 function AppRouter() {
     return (

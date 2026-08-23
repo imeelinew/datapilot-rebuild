@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux'
 import { useLocation } from 'react-router-dom'
 import AppRouter from './router/index'
 import type { RootState } from '@/store'
+import AppErrorBoundary from '@/components/AppErrorBoundary'
 
 function App() {
   const currentTheme = useSelector((state: RootState) => state.app.theme)
@@ -20,7 +21,9 @@ function App() {
             : antdTheme.defaultAlgorithm,
       }}
     >
-      <AppRouter />
+      <AppErrorBoundary resetKey={location.pathname}>
+        <AppRouter />
+      </AppErrorBoundary>
     </ConfigProvider>
   )
 }
