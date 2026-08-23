@@ -238,7 +238,7 @@ function AIChat() {
         </Spin>
       </Card>
 
-      <Card className="ai-main" title="DataPilot AI 助手">
+      <Card className="ai-main" title="城市视图 AI 助手">
         <div className="ai-messages">
           {messages.length === 0 ? (
             <Empty

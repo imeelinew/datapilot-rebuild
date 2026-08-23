@@ -1,75 +1,32 @@
-# React + TypeScript + Vite
+# 城市视图
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+城市视图是一套面向城市运营人员和数据分析人员的可视化管理平台，提供城市运行指标仪表盘、动态图表配置、地图与 3D 场景、AI 数据助手以及用户和角色权限管理。
 
-Currently, two official plugins are available:
+- 在线地址：<https://city.elinew.tech/>
+- 技术栈：React 19、TypeScript、Redux Toolkit、React Router、Ant Design、ECharts、React Three Fiber、高德地图 JS API、Axios 和 Vite
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 功能模块
 
-## React Compiler
+- 城市数据仪表盘与 CSV 导出
+- 数据源、数据表和字段级联图表编辑器
+- 柱状图、折线图、饼图和散点图统一渲染
+- 基于高德地图的标记点与空气质量覆盖层
+- 基于 React Three Fiber 的三维城市指标展示
+- 登录鉴权、角色菜单过滤与路由访问控制
+- AI 城市数据问答与分析建议
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 本地开发
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 质量检查
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+npm run lint
+npm run build
 ```
+
+生产环境由 Cloudflare Pages 托管，`/api` 请求通过 Pages Function 转发至后端服务。

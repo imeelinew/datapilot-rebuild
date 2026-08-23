@@ -69,7 +69,6 @@ function Login() {
             )
             message.success('登录成功')
             navigate('/dashboard', { replace: true })
-            console.log(result.data)
         } catch (error) {
             console.error('Failed to login:', error)
             message.error('登录失败')
@@ -81,7 +80,7 @@ function Login() {
     return (
         <div className='login-page'>
             <Card className='login-card'>
-                <Typography.Title level={3}>DataPilot</Typography.Title>
+                <Typography.Title level={3}>城市视图</Typography.Title>
 
                 <Form
                     layout='vertical'

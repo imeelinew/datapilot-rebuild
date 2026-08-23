@@ -174,7 +174,7 @@ function MainLayout() {
                         color: '#57B9FF',
                     }}
                 >
-                    {collapsed ? 'DP' : 'DataPilot'}
+                    {collapsed ? '城' : '城市视图'}
                 </div>
 
                 <Menu
