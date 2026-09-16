@@ -5,6 +5,8 @@ import {
   Card,
   Col,
   Descriptions,
+  Empty,
+  List,
   Row,
   Segmented,
   Space,
@@ -19,6 +21,7 @@ import { load as loadAMap } from '@amap/amap-jsapi-loader'
 
 import dashboardService from '@/api/dashboard'
 import type { City, EnvironmentItem } from '@/types/dashboard'
+import { distanceKm } from '@/utils/geo'
 
 type MapMode = '城市' | '环境'
 
@@ -28,6 +31,7 @@ type MapOverlay = {
 
 type MapInstance = {
   add: (overlays: MapOverlay[]) => void
+  remove: (overlays: MapOverlay[]) => void
   clearMap: () => void
   destroy: () => void
   setFitView: (overlays?: MapOverlay[]) => void
@@ -105,6 +109,7 @@ function MapView() {
     Record<number, EnvironmentItem | undefined>
   >({})
   const [selectedCity, setSelectedCity] = useState<City>()
+  const [radiusKm, setRadiusKm] = useState(800)
   const [loading, setLoading] = useState(false)
   const [mapError, setMapError] = useState('')
 
@@ -247,6 +252,30 @@ function MapView() {
     return () => map.clearMap()
   }, [cities, environmentMap, mapReady, mode])
 
+  useEffect(() => {
+    const map = mapRef.current
+    const AMap = amapRef.current
+    if (!mapReady || !map || !AMap) return
+    if (!selectedCity) {
+      if (cities.length > 0) map.setFitView()
+      return
+    }
+
+    const circle = new AMap.Circle({
+      center: [selectedCity.lng, selectedCity.lat],
+      radius: radiusKm * 1000,
+      fillColor: '#1677ff',
+      fillOpacity: 0.08,
+      strokeColor: '#1677ff',
+      strokeWeight: 2,
+      strokeStyle: 'dashed',
+    })
+    map.add([circle])
+    map.setFitView([circle])
+
+    return () => map.remove([circle])
+  }, [mapReady, cities, environmentMap, mode, selectedCity, radiusKm])
+
   const environmentList = useMemo(
     () => Object.values(environmentMap).filter(
       (item): item is EnvironmentItem => Boolean(item),
@@ -295,6 +324,16 @@ function MapView() {
   const selectedEnvironment = selectedCity
     ? environmentMap[selectedCity.id]
     : undefined
+
+  const nearbyCities = useMemo(() => {
+    if (!selectedCity) return []
+
+    return cities
+      .filter((city) => city.id !== selectedCity.id)
+      .map((city) => ({ city, distance: distanceKm(selectedCity, city) }))
+      .filter((item) => item.distance <= radiusKm)
+      .sort((a, b) => a.distance - b.distance)
+  }, [cities, selectedCity, radiusKm])
 
   return (
     <Spin spinning={loading}>
@@ -352,7 +391,7 @@ function MapView() {
         )}
 
         <Row gutter={16}>
-          <Col span={selectedCity ? 18 : 24}>
+          <Col xs={24} xl={selectedCity ? 16 : 24}>
             <Card title={mode === '城市' ? '城市分布' : '空气质量分布'}>
               <div
                 ref={mapContainerRef}
@@ -362,15 +401,20 @@ function MapView() {
             </Card>
           </Col>
           {selectedCity && (
-            <Col span={6}>
+            <Col xs={24} xl={8}>
               <Card
                 title={selectedCity.name}
                 extra={
-                  selectedEnvironment ? (
-                    <Tag color={getAqiLevel(selectedEnvironment.aqi).color}>
-                      {getAqiLevel(selectedEnvironment.aqi).label}
-                    </Tag>
-                  ) : null
+                  <Space>
+                    {selectedEnvironment && (
+                      <Tag color={getAqiLevel(selectedEnvironment.aqi).color}>
+                        {getAqiLevel(selectedEnvironment.aqi).label}
+                      </Tag>
+                    )}
+                    <Button size="small" onClick={() => setSelectedCity(undefined)}>
+                      清除选择
+                    </Button>
+                  </Space>
                 }
               >
                 <Descriptions
@@ -385,6 +429,45 @@ function MapView() {
                     { key: 'pm25', label: 'PM2.5', children: selectedEnvironment?.pm25 ?? '-' },
                   ]}
                 />
+                <div className="map-analysis">
+                  <Typography.Title level={5}>周边城市分析</Typography.Title>
+                  <Typography.Text type="secondary">
+                    按两座城市的经纬度计算球面直线距离。蓝色范围对应当前半径。
+                  </Typography.Text>
+                  <Segmented
+                    block
+                    value={radiusKm}
+                    options={[
+                      { label: '300 km', value: 300 },
+                      { label: '800 km', value: 800 },
+                      { label: '1500 km', value: 1500 },
+                    ]}
+                    onChange={(value) => setRadiusKm(Number(value))}
+                    style={{ marginTop: 12 }}
+                  />
+                  <Statistic
+                    title="范围内城市"
+                    value={nearbyCities.length}
+                    suffix="座"
+                    style={{ marginTop: 16 }}
+                  />
+                  {nearbyCities.length === 0 ? (
+                    <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="当前范围内没有其他城市" />
+                  ) : (
+                    <List
+                      size="small"
+                      dataSource={nearbyCities}
+                      renderItem={({ city, distance }) => (
+                        <List.Item>
+                          <Typography.Text>{city.name}</Typography.Text>
+                          <Typography.Text type="secondary">
+                            {Math.round(distance).toLocaleString('zh-CN')} km
+                          </Typography.Text>
+                        </List.Item>
+                      )}
+                    />
+                  )}
+                </div>
               </Card>
             </Col>
           )}

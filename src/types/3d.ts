@@ -12,4 +12,6 @@ export type CityColumnProps = {
     height: number
     position: [number, number, number]
     color: string
+    selected: boolean
+    onSelect: () => void
 }

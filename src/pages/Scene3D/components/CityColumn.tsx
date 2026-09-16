@@ -10,6 +10,8 @@ function CityColumn({
     height,
     position,
     color,
+    selected,
+    onSelect,
 }: CityColumnProps) {
     const groupRef = useRef<Group>(null)
     const [hovered, setHovered] = useState(false)
@@ -41,6 +43,10 @@ function CityColumn({
                 position={[0, height / 2, 0]}
                 onPointerOver={() => setHovered(true)}
                 onPointerOut={() => setHovered(false)}
+                onClick={(event) => {
+                    event.stopPropagation()
+                    onSelect()
+                }}
             >
                 <meshPhysicalMaterial
                     color={color}
@@ -48,11 +54,18 @@ function CityColumn({
                     metalness={0.35}
                     clearcoat={1}
                     emissive={color}
-                    emissiveIntensity={hovered ? 0.6 : 0.15}
+                    emissiveIntensity={selected ? 0.85 : hovered ? 0.6 : 0.15}
                 />
             </RoundedBox>
 
-            {hovered && (
+            {selected && (
+                <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.05, 0]}>
+                    <torusGeometry args={[0.48, 0.055, 8, 40]} />
+                    <meshBasicMaterial color={color} />
+                </mesh>
+            )}
+
+            {(hovered || selected) && (
                 <Html
                     position={[0, height + 0.6, 0]}
                     center

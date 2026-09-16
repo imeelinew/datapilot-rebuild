@@ -1,8 +1,22 @@
 import { useEffect, useRef } from "react";
-import * as echarts from 'echarts'
+import * as echarts from 'echarts/core'
+import { BarChart, LineChart, PieChart, ScatterChart } from 'echarts/charts'
+import { GridComponent, LegendComponent, TooltipComponent } from 'echarts/components'
+import { CanvasRenderer } from 'echarts/renderers'
 import type { ChartRendererProps } from "@/types/chart";
 import { useSelector } from 'react-redux'
 import type { RootState } from '@/store'
+
+echarts.use([
+    BarChart,
+    LineChart,
+    PieChart,
+    ScatterChart,
+    GridComponent,
+    LegendComponent,
+    TooltipComponent,
+    CanvasRenderer,
+])
 
 function ChartRenderer({
     option,

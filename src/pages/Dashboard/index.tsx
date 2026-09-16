@@ -348,7 +348,7 @@ function Dashboard() {
                     gutter={[16, 16]}
                 >
                     {overviewItems.map((item) => (
-                        <Col span={6} key={item.title}>
+                        <Col xs={24} sm={12} xl={6} key={item.title}>
                             <Card>
                                 <Statistic
                                     title={item.title}
@@ -371,13 +371,13 @@ function Dashboard() {
                     </Col>
                 </Row>
                 <Row gutter={[16, 16]}>
-                    <Col span={12}>
+                    <Col xs={24} lg={12}>
                         <Card title="交通拥堵排行">
                             <ChartRenderer option={trafficOption} />
                         </Card>
                     </Col>
 
-                    <Col span={12}>
+                    <Col xs={24} lg={12}>
                         <Card title="城市事件分类">
                             <ChartRenderer option={eventOption} />
                         </Card>

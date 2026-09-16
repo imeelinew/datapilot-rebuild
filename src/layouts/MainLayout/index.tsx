@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Layout, Menu, Button, Space, message, Breadcrumb, theme, type MenuProps } from 'antd'
+import { Layout, Menu, Button, Space, message, Breadcrumb, Drawer, Grid, theme, type MenuProps } from 'antd'
 import {
     BlockOutlined,
     DashboardOutlined,
@@ -112,7 +112,10 @@ const menuItems: MenuNode[] = [
 
 function MainLayout() {
     const [collapsed, setCollapsed] = useState(false)
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
     const [openKeys, setOpenKeys] = useState<string[]>([])
+    const screens = Grid.useBreakpoint()
+    const isMobile = screens.lg === false
     const navigate = useNavigate()
     const location = useLocation()
     const dispatch = useDispatch()
@@ -154,45 +157,54 @@ function MainLayout() {
         title: item.label,
     }))
 
+    const navigationMenu = (
+        <Menu
+            theme={currentTheme}
+            mode="inline"
+            items={visibleMenuItems as MenuProps['items']}
+            selectedKeys={[selectedKey]}
+            openKeys={openKeys}
+            onOpenChange={(keys) => setOpenKeys(keys as string[])}
+            onClick={(item) => {
+                navigate(item.key)
+                setMobileMenuOpen(false)
+            }}
+        />
+    )
+
     return (
         <Layout className="main-layout">
-            <Sider
-
-                theme={currentTheme}
-                collapsed={collapsed}
-                trigger={null}
-            >
-                <div
-                    style={{
-                        height: 56,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: 700,
-                        fontSize: collapsed ? 16 : 18,
-                        whiteSpace: 'nowrap',
-                        overflow: 'hidden',
-                        color: token.colorPrimary,
-                    }}
+            {isMobile ? (
+                <Drawer
+                    title="城市视图"
+                    placement="left"
+                    width={240}
+                    open={mobileMenuOpen}
+                    onClose={() => setMobileMenuOpen(false)}
+                    styles={{ body: { padding: 0 } }}
                 >
-                    {collapsed ? '城' : '城市视图'}
-                </div>
-
-                <Menu
-                    theme={currentTheme}
-                    mode="inline"
-                    //这里如果使用items={menuItems}会报错
-                    //因为menuItems 使用的是我们自己定义的 MenuNode[]，方便面包屑递归查找。
-                    //Menu 的 items 要求 Ant Design 自己的菜单类型。
-                    //两者实际数据结构兼容，但 TypeScript 不确定，所以在传入组件时明确告诉它类型。
-                    items={visibleMenuItems as MenuProps['items']}
-                    selectedKeys={[selectedKey]}
-                    openKeys={openKeys}
-                    onOpenChange={(keys) => setOpenKeys(keys as string[])}
-                    onClick={(item) => navigate(item.key)}
-                />
-
-            </Sider>
+                    {navigationMenu}
+                </Drawer>
+            ) : (
+                <Sider theme={currentTheme} collapsed={collapsed} trigger={null}>
+                    <div
+                        style={{
+                            height: 56,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 700,
+                            fontSize: collapsed ? 16 : 18,
+                            whiteSpace: 'nowrap',
+                            overflow: 'hidden',
+                            color: token.colorPrimary,
+                        }}
+                    >
+                        {collapsed ? '城' : '城市视图'}
+                    </div>
+                    {navigationMenu}
+                </Sider>
+            )}
 
             <Layout>
                 <Header
@@ -202,12 +214,11 @@ function MainLayout() {
                     <Space>
                         <Button
                             type="text"
-                            icon={
-                                collapsed
-                                    ? <MenuUnfoldOutlined />
-                                    : <MenuFoldOutlined />
-                            }
-                            onClick={() => setCollapsed(!collapsed)}
+                            icon={isMobile || collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                            onClick={() => {
+                                if (isMobile) setMobileMenuOpen(true)
+                                else setCollapsed(!collapsed)
+                            }}
                         />
                         <span>城市数据可视化平台</span>
                     </Space>
