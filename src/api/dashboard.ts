@@ -7,6 +7,7 @@ import type {
     FacilityResult,
     OverviewResult,
     TrafficRankingResult,
+    TrafficHeatmapResult,
 } from '@/types/dashboard'
 
 const dashboardService = {
@@ -32,6 +33,10 @@ const dashboardService = {
         return request.get(
             '/cities/traffic-ranking',
         ) as Promise<TrafficRankingResult>
+    },
+
+    getTrafficHeatmap() {
+        return request.get('/cities/traffic-heatmap') as Promise<TrafficHeatmapResult>
     },
 
     getEventStats() {

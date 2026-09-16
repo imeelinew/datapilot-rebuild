@@ -78,11 +78,16 @@ function Dashboard() {
                 dashboardService.getLatestEvents(),
             ])
 
-            setOverview(overviewResult.data)
-            setEventStats(eventStatsResult.data)
-            setFacilityStats(facilityStatsResult.data)
-            setTrafficRanking(trafficRankingResult.data)
-            setLatestEvents(latestEventsResult.data.list)
+            setOverview({ ...emptyOverview, ...overviewResult.data })
+            setEventStats({
+                total: eventStatsResult.data?.total ?? 0,
+                byType: Array.isArray(eventStatsResult.data?.byType) ? eventStatsResult.data.byType : [],
+                bySeverity: Array.isArray(eventStatsResult.data?.bySeverity) ? eventStatsResult.data.bySeverity : [],
+                byStatus: Array.isArray(eventStatsResult.data?.byStatus) ? eventStatsResult.data.byStatus : [],
+            })
+            setFacilityStats(Array.isArray(facilityStatsResult.data) ? facilityStatsResult.data : [])
+            setTrafficRanking(Array.isArray(trafficRankingResult.data) ? trafficRankingResult.data : [])
+            setLatestEvents(Array.isArray(latestEventsResult.data?.list) ? latestEventsResult.data.list : [])
 
             if (showMessage) {
                 message.success('获取数据成功')

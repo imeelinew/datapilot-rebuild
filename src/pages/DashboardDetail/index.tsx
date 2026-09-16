@@ -47,7 +47,16 @@ function DashboardDetail() {
             const result =
                 await dashboardManageService.getDetail(Number(id))
 
-            const dashboard = result.data
+            if (!result.data) {
+                setDetail(null)
+                setChartDataList([])
+                return
+            }
+
+            const dashboard = {
+                ...result.data,
+                charts: Array.isArray(result.data.charts) ? result.data.charts : [],
+            }
             setDetail(dashboard)
 
             const queryResults = await Promise.all(

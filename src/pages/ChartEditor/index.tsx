@@ -76,13 +76,13 @@ function ChartEditor() {
 
   const loadTables = useCallback(async (datasourceId: number) => {
     const result = await datasourceService.getTables(datasourceId)
-    setTables(result.data)
+    setTables(Array.isArray(result.data) ? result.data : [])
   }, [])
 
   const loadFields = useCallback(
     async (datasourceId: number, table: string) => {
       const result = await datasourceService.getFields(datasourceId, table)
-      setFields(result.data)
+      setFields(Array.isArray(result.data) ? result.data : [])
     },
     [],
   )
@@ -95,8 +95,8 @@ function ChartEditor() {
           dashboardManageService.getList({ page: 1, pageSize: 100 }),
           datasourceService.getList(),
         ])
-        setDashboards(dashboardResult.data.list)
-        setDatasources(datasourceResult.data.list)
+        setDashboards(Array.isArray(dashboardResult.data?.list) ? dashboardResult.data.list : [])
+        setDatasources(Array.isArray(datasourceResult.data?.list) ? datasourceResult.data.list : [])
 
         const dashboardId = Number(searchParams.get('dashboardId'))
         if (dashboardId) {

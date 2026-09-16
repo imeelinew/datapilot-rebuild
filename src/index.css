@@ -64,16 +64,58 @@ select {
 
 .login-page {
   min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #fff;
+}
+
+.login-visual {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #182a3b;
+}
+
+.login-visual img {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+  object-fit: cover;
+  object-position: 55% center;
+}
+
+.login-form-panel {
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background: #eef2f6;
+  padding: 64px 48px;
 }
 
-.login-card {
-  width: 380px;
-  border: 1px solid #dfe5ec;
+.login-form-content {
+  width: min(100%, 420px);
+}
+
+.login-form-content h2.ant-typography {
+  margin: 0 0 42px;
+  font-size: 32px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+}
+
+.login-form-content .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.login-form-content .ant-form-item-label > label {
+  font-weight: 500;
+}
+
+.login-form-content .ant-btn-primary {
+  height: 48px;
+  margin-top: 8px;
+  font-weight: 600;
 }
 
 .captcha-row {
@@ -87,8 +129,9 @@ select {
 }
 
 .captcha-image {
-  width: 120px;
+  width: 132px;
   height: 40px;
+  padding: 0;
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -100,10 +143,36 @@ select {
   border-radius: 6px;
 }
 
+.captcha-image:focus-visible {
+  outline: 2px solid #1677ff;
+  outline-offset: 2px;
+}
+
 .captcha-image img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+@media (max-width: 760px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-visual {
+    min-height: 26vh;
+    max-height: 220px;
+  }
+
+  .login-form-panel {
+    min-height: calc(100vh - 26vh);
+    align-items: flex-start;
+    padding: 44px 24px 64px;
+  }
+
+  .login-form-content h2.ant-typography {
+    margin-bottom: 30px;
+  }
 }
 
 .dashboard-header {
@@ -251,6 +320,27 @@ select {
 .map-analysis .ant-list {
   max-height: 260px;
   overflow-y: auto;
+}
+
+.traffic-hotspot-marker {
+  width: 12px;
+  height: 12px;
+  background: #f5222d;
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 0 0 5px rgb(245 34 45 / 20%);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+}
+
+.traffic-ranking {
+  max-height: 330px;
+  overflow-y: auto;
+  margin-top: 12px;
+}
+
+.traffic-ranking-item {
+  cursor: pointer;
 }
 
 .scene-explorer {

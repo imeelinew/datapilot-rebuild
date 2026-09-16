@@ -47,7 +47,7 @@ function DashboardManage() {
         pageSize: 20,
         keyword: searchKeyword || undefined
       })
-      setDashboards(result.data.list)
+      setDashboards(Array.isArray(result.data?.list) ? result.data.list : [])
     } catch {
       message.error('获取仪表盘列表失败')
     } finally {

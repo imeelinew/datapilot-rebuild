@@ -20,10 +20,10 @@ import { ReloadOutlined } from '@ant-design/icons'
 import { load as loadAMap } from '@amap/amap-jsapi-loader'
 
 import dashboardService from '@/api/dashboard'
-import type { City, EnvironmentItem } from '@/types/dashboard'
+import type { City, EnvironmentItem, TrafficHeatmapItem } from '@/types/dashboard'
 import { distanceKm } from '@/utils/geo'
 
-type MapMode = '城市' | '环境'
+type MapMode = '城市' | '环境' | '交通'
 
 type MapOverlay = {
   on: (event: string, handler: () => void) => void
@@ -35,6 +35,15 @@ type MapInstance = {
   clearMap: () => void
   destroy: () => void
   setFitView: (overlays?: MapOverlay[]) => void
+  setZoomAndCenter: (zoom: number, center: [number, number]) => void
+}
+
+type HeatMapInstance = {
+  setDataSet: (dataset: {
+    data: Array<{ lng: number; lat: number; count: number }>
+    max: number
+  }) => void
+  setMap: (map: MapInstance | null) => void
 }
 
 type InfoWindowInstance = {
@@ -48,6 +57,7 @@ type AMapApi = {
   ) => MapInstance
   Marker: new (options: Record<string, unknown>) => MapOverlay
   Circle: new (options: Record<string, unknown>) => MapOverlay
+  HeatMap?: new (map: MapInstance, options: Record<string, unknown>) => HeatMapInstance
   InfoWindow: new (
     options: Record<string, unknown>,
   ) => InfoWindowInstance
@@ -108,6 +118,9 @@ function MapView() {
   const [environmentMap, setEnvironmentMap] = useState<
     Record<number, EnvironmentItem | undefined>
   >({})
+  const [trafficPoints, setTrafficPoints] = useState<TrafficHeatmapItem[]>([])
+  const [trafficError, setTrafficError] = useState('')
+  const [selectedTraffic, setSelectedTraffic] = useState<TrafficHeatmapItem>()
   const [selectedCity, setSelectedCity] = useState<City>()
   const [radiusKm, setRadiusKm] = useState(800)
   const [loading, setLoading] = useState(false)
@@ -117,21 +130,36 @@ function MapView() {
     setLoading(true)
     try {
       const cityResult = await dashboardService.getCities()
-      const cityList = cityResult.data.slice(0, 20)
+      const cityList = Array.isArray(cityResult.data)
+        ? cityResult.data.slice(0, 20)
+        : []
       setCities(cityList)
 
-      const environmentResults = await Promise.allSettled(
-        cityList.map((city) =>
-          dashboardService.getCityEnvironment(city.id),
+      const [environmentResults, trafficResult] = await Promise.all([
+        Promise.allSettled(
+          cityList.map((city) => dashboardService.getCityEnvironment(city.id)),
         ),
-      )
+        dashboardService.getTrafficHeatmap().then(
+          (result) => result.data,
+          () => null,
+        ),
+      ])
       const nextMap: Record<number, EnvironmentItem | undefined> = {}
       environmentResults.forEach((result, index) => {
         if (result.status === 'fulfilled') {
-          nextMap[cityList[index].id] = result.value.data[0]
+          nextMap[cityList[index].id] = Array.isArray(result.value.data)
+            ? result.value.data[0]
+            : undefined
         }
       })
       setEnvironmentMap(nextMap)
+      if (Array.isArray(trafficResult)) {
+        setTrafficPoints(trafficResult)
+        setSelectedTraffic(undefined)
+        setTrafficError('')
+      } else {
+        setTrafficError('交通热力数据暂时不可用')
+      }
     } catch (error) {
       console.error(error)
       message.error('地图数据加载失败')
@@ -160,7 +188,7 @@ function MapView() {
     let cancelled = false
     let map: MapInstance | null = null
 
-    loadAMap({ key, version: '2.0' })
+    loadAMap({ key, version: '2.0', plugins: ['AMap.HeatMap'] })
       .then((AMap) => {
         if (cancelled || !mapContainerRef.current) return
         const api = AMap as unknown as AMapApi
@@ -204,6 +232,7 @@ function MapView() {
     if (!mapReady || !map || !AMap || cities.length === 0) return
 
     map.clearMap()
+    if (mode === '交通') return
     const overlays: MapOverlay[] = []
 
     cities.forEach((city) => {
@@ -252,10 +281,85 @@ function MapView() {
     return () => map.clearMap()
   }, [cities, environmentMap, mapReady, mode])
 
+  const rankedTraffic = useMemo(
+    () => [...trafficPoints]
+      .filter((point) =>
+        Number.isFinite(point.lng) &&
+        Number.isFinite(point.lat) &&
+        Number.isFinite(point.congestionIndex),
+      )
+      .sort((a, b) => b.congestionIndex - a.congestionIndex),
+    [trafficPoints],
+  )
+  const activeTraffic = selectedTraffic ?? rankedTraffic[0]
+
   useEffect(() => {
     const map = mapRef.current
     const AMap = amapRef.current
-    if (!mapReady || !map || !AMap) return
+    if (!mapReady || mode !== '交通' || !map || !AMap || rankedTraffic.length === 0) return
+
+    let heatmap: HeatMapInstance | undefined
+    const fallbackOverlays: MapOverlay[] = []
+
+    if (AMap.HeatMap) {
+      heatmap = new AMap.HeatMap(map, {
+        radius: 32,
+        opacity: [0, 0.85],
+        gradient: {
+          0.2: '#52c41a',
+          0.5: '#faad14',
+          0.8: '#fa8c16',
+          1: '#f5222d',
+        },
+      })
+      heatmap.setDataSet({
+        data: rankedTraffic.map((point) => ({
+          lng: point.lng,
+          lat: point.lat,
+          count: point.congestionIndex,
+        })),
+        max: Math.max(10, rankedTraffic[0].congestionIndex),
+      })
+    } else {
+      rankedTraffic.slice(0, 60).forEach((point) => {
+        fallbackOverlays.push(new AMap.Circle({
+          center: [point.lng, point.lat],
+          radius: 1600,
+          fillColor: point.congestionIndex >= 8 ? '#f5222d' : '#fa8c16',
+          fillOpacity: 0.35,
+          strokeOpacity: 0,
+        }))
+      })
+    }
+
+    const markers = rankedTraffic.slice(0, 20).map((point) => {
+      const marker = new AMap.Marker({
+        position: [point.lng, point.lat],
+        title: point.roadName,
+        content: '<div class="traffic-hotspot-marker"></div>',
+      })
+      marker.on('click', () => setSelectedTraffic(point))
+      return marker
+    })
+    map.add([...fallbackOverlays, ...markers])
+
+    return () => {
+      heatmap?.setMap(null)
+      map.remove([...fallbackOverlays, ...markers])
+    }
+  }, [mapReady, mode, rankedTraffic])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (mapReady && mode === '交通' && map && activeTraffic) {
+      map.setZoomAndCenter(11, [activeTraffic.lng, activeTraffic.lat])
+    }
+  }, [mapReady, mode, activeTraffic])
+
+  useEffect(() => {
+    const map = mapRef.current
+    const AMap = amapRef.current
+    if (!mapReady || !map || !AMap || mode === '交通') return
     if (!selectedCity) {
       if (cities.length > 0) map.setFitView()
       return
@@ -343,14 +447,11 @@ function MapView() {
             <Typography.Title level={3} style={{ margin: 0 }}>
               地图可视化
             </Typography.Title>
-            <Typography.Text type="secondary">
-              城市基础信息与实时环境监测
-            </Typography.Text>
           </div>
           <Space>
             <Segmented
               value={mode}
-              options={['城市', '环境']}
+              options={['城市', '环境', '交通']}
               onChange={(value) => setMode(value as MapMode)}
             />
             <Button
@@ -379,6 +480,9 @@ function MapView() {
         </Row>
 
         {mapError && <Alert showIcon type="warning" message={mapError} />}
+        {mode === '交通' && trafficError && (
+          <Alert showIcon type="warning" message={trafficError} />
+        )}
 
         {mode === '环境' && (
           <Space wrap>
@@ -391,8 +495,8 @@ function MapView() {
         )}
 
         <Row gutter={16}>
-          <Col xs={24} xl={selectedCity ? 16 : 24}>
-            <Card title={mode === '城市' ? '城市分布' : '空气质量分布'}>
+          <Col xs={24} xl={(mode === '交通' ? activeTraffic : selectedCity) ? 16 : 24}>
+            <Card title={mode === '城市' ? '城市分布' : mode === '环境' ? '空气质量分布' : '交通拥堵热力图'}>
               <div
                 ref={mapContainerRef}
                 className="amap-view"
@@ -400,7 +504,7 @@ function MapView() {
               />
             </Card>
           </Col>
-          {selectedCity && (
+          {mode !== '交通' && selectedCity && (
             <Col xs={24} xl={8}>
               <Card
                 title={selectedCity.name}
@@ -431,9 +535,6 @@ function MapView() {
                 />
                 <div className="map-analysis">
                   <Typography.Title level={5}>周边城市分析</Typography.Title>
-                  <Typography.Text type="secondary">
-                    按两座城市的经纬度计算球面直线距离。蓝色范围对应当前半径。
-                  </Typography.Text>
                   <Segmented
                     block
                     value={radiusKm}
@@ -468,6 +569,37 @@ function MapView() {
                     />
                   )}
                 </div>
+              </Card>
+            </Col>
+          )}
+          {mode === '交通' && activeTraffic && (
+            <Col xs={24} xl={8}>
+              <Card title="交通热点">
+                <Descriptions
+                  column={1}
+                  size="small"
+                  items={[
+                    { key: 'road', label: '道路', children: activeTraffic.roadName },
+                    { key: 'index', label: '拥堵指数', children: activeTraffic.congestionIndex.toFixed(1) },
+                    { key: 'point', label: '监测点', children: `${activeTraffic.lng.toFixed(3)}, ${activeTraffic.lat.toFixed(3)}` },
+                  ]}
+                />
+                <List
+                  size="small"
+                  className="traffic-ranking"
+                  dataSource={rankedTraffic.slice(0, 10)}
+                  renderItem={(point, index) => (
+                    <List.Item
+                      className="traffic-ranking-item"
+                      onClick={() => setSelectedTraffic(point)}
+                    >
+                      <Typography.Text>{index + 1}. {point.roadName}</Typography.Text>
+                      <Tag color={point.congestionIndex >= 8 ? 'red' : 'orange'}>
+                        {point.congestionIndex.toFixed(1)}
+                      </Tag>
+                    </List.Item>
+                  )}
+                />
               </Card>
             </Col>
           )}

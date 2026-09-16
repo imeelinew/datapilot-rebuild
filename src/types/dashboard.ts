@@ -80,6 +80,13 @@ export interface EnvironmentItem {
   recordedAt: string
 }
 
+export interface TrafficHeatmapItem {
+  lng: number
+  lat: number
+  congestionIndex: number
+  roadName: string
+}
+
 export interface CityEventPage {
   list: CityEvent[]
   total: number
@@ -102,3 +109,5 @@ export type CityEventPageResult =
   ApiResult<CityEventPage>
 
 export type EnvironmentResult = ApiResult<EnvironmentItem[]>
+
+export type TrafficHeatmapResult = ApiResult<TrafficHeatmapItem[]>

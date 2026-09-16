@@ -34,8 +34,8 @@ function UserManage() {
       const result = await userService.getList({
         page, pageSize, username: searchUsername || undefined, status, roleId,
       })
-      setUsers(result.data.list)
-      setTotal(result.data.total)
+      setUsers(Array.isArray(result.data?.list) ? result.data.list : [])
+      setTotal(result.data?.total ?? 0)
     } catch (error) {
       console.error(error)
       message.error('获取用户列表失败')
@@ -49,7 +49,7 @@ function UserManage() {
     async function loadRoles() {
       try {
         const result = await roleService.getList()
-        setRoles(result.data)
+        setRoles(Array.isArray(result.data) ? result.data : [])
       } catch (error) { console.error(error) }
     }
     void loadRoles()

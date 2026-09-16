@@ -38,7 +38,7 @@ function AIChat() {
     setLoading(true)
     try {
       const result = await aiService.getConversations()
-      setConversations(result.data.list)
+      setConversations(Array.isArray(result.data?.list) ? result.data.list : [])
     } catch (error) {
       console.error(error)
       antdMessage.error('获取历史对话失败')
@@ -60,7 +60,7 @@ function AIChat() {
     setLoading(true)
     try {
       const result = await aiService.getConversation(id)
-      setMessages(result.data.messages || [])
+      setMessages(Array.isArray(result.data?.messages) ? result.data.messages : [])
     } catch (error) {
       console.error(error)
       antdMessage.error('获取对话内容失败')

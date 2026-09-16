@@ -5,7 +5,6 @@ import {
 } from 'react'
 import {
     Button,
-    Card,
     Form,
     Input,
     Typography,
@@ -16,6 +15,7 @@ import { useNavigate } from 'react-router-dom'
 import authService from '@/api/auth'
 import { setAuth } from '@/store/authSlice'
 import type { LoginFormValues } from '@/types/auth'
+import loginCity from '@/assets/login-city.jpg'
 
 function Login() {
     const dispatch = useDispatch()
@@ -79,76 +79,80 @@ function Login() {
     }
     return (
         <div className='login-page'>
-            <Card className='login-card'>
-                <Typography.Title level={3}>城市视图</Typography.Title>
-                <Typography.Paragraph type="secondary">
-                    城市数据可视化分析平台
-                </Typography.Paragraph>
+            <div className="login-visual">
+                <img src={loginCity} alt="上海城市实景" />
+            </div>
+            <main className="login-form-panel">
+                <div className="login-form-content">
+                    <Typography.Title level={2}>城市视图</Typography.Title>
+                    <Form
+                        layout='vertical'
+                        size="large"
+                        onFinish={handleLogin}>
+                        <Form.Item
+                            label="用户名"
+                            name="username"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: '请输入用户名',
+                                },
+                            ]}
+                        >
+                            <Input placeholder="请输入用户名" />
+                        </Form.Item>
+                        <Form.Item
+                            label="密码"
+                            name="password"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: '请输入密码',
+                                },
+                            ]}
+                        >
+                            <Input.Password placeholder="请输入密码" />
+                        </Form.Item>
+                        <Form.Item label="验证码" required>
+                            <div className="captcha-row">
+                                <Form.Item
+                                    name="captchaCode"
+                                    noStyle
+                                    rules={[
+                                        {
+                                            required: true,
+                                            message: '请输入验证码',
+                                        },
+                                    ]}
+                                >
+                                    <Input placeholder="验证码" />
+                                </Form.Item>
 
-                <Form
-                    layout='vertical'
-                    onFinish={handleLogin}>
-                    <Form.Item
-                        label="用户名"
-                        name="username"
-                        rules={[
-                            {
-                                required: true,
-                                message: '请输入用户名',
-                            },
-                        ]}
-                    >
-                        <Input placeholder="请输入用户名" />
-                    </Form.Item>
-                    <Form.Item
-                        label="密码"
-                        name="password"
-                        rules={[
-                            {
-                                required: true,
-                                message: '请输入密码',
-                            },
-                        ]}
-                    >
-                        <Input.Password placeholder="请输入密码" />
-                    </Form.Item>
-                    <Form.Item label="验证码" required>
-                        <div className="captcha-row">
-                            <Form.Item
-                                name="captchaCode"
-                                noStyle
-                                rules={[
-                                    {
-                                        required: true,
-                                        message: '请输入验证码',
-                                    },
-                                ]}
-                            >
-                                <Input placeholder="验证码" />
-                            </Form.Item>
-
-                            <div
-                                className="captcha-image"
-                                onClick={() => void loadCaptcha()}
-                            >
-                                {captchaImg ? (
-                                    <img src={captchaImg} alt="验证码" />
-                                ) : (
-                                    <span>加载中</span>
-                                )}
+                                <button
+                                    type="button"
+                                    className="captcha-image"
+                                    onClick={() => void loadCaptcha()}
+                                    aria-label="刷新验证码"
+                                >
+                                    {captchaImg ? (
+                                        <img src={captchaImg} alt="验证码" />
+                                    ) : (
+                                        <span>加载中</span>
+                                    )}
+                                </button>
                             </div>
-                        </div>
-                    </Form.Item>
-                    <Button
-                        type="primary"
-                        htmlType="submit"
-                        block
-                        loading={loading}
-                    >
-                        登录
-                    </Button>
-                </Form>
-            </Card>
+                        </Form.Item>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            block
+                            loading={loading}
+                        >
+                            登录
+                        </Button>
+                    </Form>
+                </div>
+            </main>
         </div>
     )
 }

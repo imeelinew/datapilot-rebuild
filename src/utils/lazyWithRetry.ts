@@ -5,11 +5,12 @@ import {
 } from 'react'
 
 const retryKeyPrefix = 'city-view:chunk-retry:'
+const retryWindowMs = 30_000
 
 function isChunkLoadError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error)
 
-  return /Failed to fetch dynamically imported module|Importing a module script failed|ChunkLoadError|Loading chunk/i.test(
+  return /Failed to fetch dynamically imported module|Importing a module script failed|error loading dynamically imported module|Failed to load module script|Unable to preload CSS|ChunkLoadError|Loading chunk/i.test(
     message,
   )
 }
@@ -31,8 +32,9 @@ export function lazyWithRetry<T extends ComponentType<unknown>>(
       }
 
       try {
-        if (!sessionStorage.getItem(retryKey)) {
-          sessionStorage.setItem(retryKey, '1')
+        const lastRetry = Number(sessionStorage.getItem(retryKey) || 0)
+        if (Date.now() - lastRetry > retryWindowMs) {
+          sessionStorage.setItem(retryKey, String(Date.now()))
           window.location.reload()
 
           // Keep Suspense pending while the browser starts the reload.

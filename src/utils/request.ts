@@ -25,7 +25,21 @@ request.interceptors.request.use(
 
 request.interceptors.response.use(
   (response) => {
-    return response.data
+    const payload = response.data
+
+    if (
+      payload &&
+      typeof payload === 'object' &&
+      typeof payload.code === 'number' &&
+      payload.code !== 200
+    ) {
+      if (payload.code === 401) {
+        store.dispatch(clearAuth())
+      }
+      return Promise.reject(new Error(payload.message || '请求失败'))
+    }
+
+    return payload
   },
 
   (error) => {

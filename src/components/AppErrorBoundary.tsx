@@ -3,7 +3,7 @@ import {
   type ErrorInfo,
   type ReactNode,
 } from 'react'
-import { Button, Result, Space } from 'antd'
+import { Alert, Button } from 'antd'
 
 type AppErrorBoundaryProps = {
   children: ReactNode
@@ -19,6 +19,8 @@ class AppErrorBoundary extends Component<
   AppErrorBoundaryState
 > {
   state: AppErrorBoundaryState = { error: null }
+  private retryCount = 0
+  private retryTimer: number | undefined
 
   static getDerivedStateFromError(error: Error) {
     return { error }
@@ -26,15 +28,27 @@ class AppErrorBoundary extends Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error('Page rendering failed', error, info)
+
+    if (this.retryCount === 0) {
+      this.retryCount = 1
+      this.retryTimer = window.setTimeout(() => {
+        this.setState({ error: null })
+      }, 150)
+    }
   }
 
   componentDidUpdate(previousProps: AppErrorBoundaryProps) {
     if (
-      this.state.error &&
       previousProps.resetKey !== this.props.resetKey
     ) {
+      window.clearTimeout(this.retryTimer)
+      this.retryCount = 0
       this.setState({ error: null })
     }
+  }
+
+  componentWillUnmount() {
+    window.clearTimeout(this.retryTimer)
   }
 
   render() {
@@ -43,20 +57,14 @@ class AppErrorBoundary extends Component<
     }
 
     return (
-      <Result
-        status="error"
-        title="页面加载失败"
-        subTitle="页面资源可能刚刚更新，请刷新后重试。"
-        extra={(
-          <Space wrap>
-            <Button type="primary" onClick={() => window.location.reload()}>
-              刷新页面
-            </Button>
-            <Button onClick={() => window.location.assign('/dashboard')}>
-              返回仪表盘
-            </Button>
-          </Space>
-        )}
+      <Alert
+        type="warning"
+        title="当前内容暂时不可用"
+        action={
+          <Button size="small" onClick={() => window.location.reload()}>
+            重试
+          </Button>
+        }
       />
     )
   }

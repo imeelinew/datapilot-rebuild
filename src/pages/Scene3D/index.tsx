@@ -19,8 +19,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import dashboardService from '@/api/dashboard'
 import type { City } from '@/types/dashboard'
 import CityColumn from './components/CityColumn'
+import { CitySandbox } from './components/CitySandbox'
+import { sandboxZones } from './sandboxZones'
 
 type MetricType = 'population' | 'area' | 'gdp'
+type SceneMode = 'model' | 'chart'
 
 type SceneCity = {
   city: City
@@ -110,8 +113,11 @@ function SceneContent({
 
 function Scene3D() {
   const [cities, setCities] = useState<City[]>([])
+  const [sceneMode, setSceneMode] = useState<SceneMode>('model')
   const [metric, setMetric] = useState<MetricType>('population')
   const [selectedCityId, setSelectedCityId] = useState<number>()
+  const [selectedZoneId, setSelectedZoneId] = useState<string>()
+  const [exploded, setExploded] = useState(false)
   const [autoRotate, setAutoRotate] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -120,7 +126,7 @@ function Scene3D() {
 
     try {
       const result = await dashboardService.getCities()
-      setCities(result.data)
+      setCities(Array.isArray(result.data) ? result.data : [])
     } catch (error) {
       console.error(error)
       message.error('城市数据加载失败')
@@ -160,6 +166,7 @@ function Scene3D() {
     ? sceneData.reduce((sum, item) => sum + item.metricValue, 0) / cities.length
     : 0
   const maxValue = sceneData[0]?.metricValue ?? 0
+  const selectedZone = sandboxZones.find((zone) => zone.id === selectedZoneId)
 
   return (
     <Space orientation="vertical" size="large" style={{ width: '100%' }}>
@@ -168,16 +175,23 @@ function Scene3D() {
           <Typography.Title level={3} style={{ margin: 0 }}>
             3D 城市场景
           </Typography.Title>
-          <Typography.Text type="secondary">
-            点击数据柱选中城市，拖动旋转视角，滚轮缩放
-          </Typography.Text>
         </div>
         <Space wrap>
+          <Segmented
+            value={sceneMode}
+            options={[
+              { label: '城市沙盘', value: 'model' },
+              { label: '指标柱图', value: 'chart' },
+            ]}
+            onChange={(value) => setSceneMode(value as SceneMode)}
+          />
+          {sceneMode === 'chart' && (
           <Segmented
             value={metric}
             options={Object.entries(metricLabels).map(([value, label]) => ({ value, label }))}
             onChange={(value) => setMetric(value as MetricType)}
           />
+          )}
           <Switch
             checked={autoRotate}
             checkedChildren="自动旋转"
@@ -197,18 +211,65 @@ function Scene3D() {
       <Spin spinning={loading}>
         <div className="scene-explorer">
           <div className="scene-canvas">
-            <Canvas camera={{ position: [11, 12, 16], fov: 50 }}>
-              <SceneContent
-                cityData={sceneData}
-                selectedCityId={selected?.city.id}
-                onSelectCity={setSelectedCityId}
-                autoRotate={autoRotate}
-              />
+            <Canvas
+              key={sceneMode}
+              camera={{ position: sceneMode === 'model' ? [10, 11, 13] : [11, 12, 16], fov: 50 }}
+            >
+              {sceneMode === 'model' ? (
+                <CitySandbox
+                  selectedZoneId={selectedZoneId}
+                  onSelectZone={(id) => {
+                    setSelectedZoneId(id)
+                    setExploded(false)
+                  }}
+                  exploded={exploded}
+                  autoRotate={autoRotate}
+                />
+              ) : (
+                <SceneContent
+                  cityData={sceneData}
+                  selectedCityId={selected?.city.id}
+                  onSelectCity={setSelectedCityId}
+                  autoRotate={autoRotate}
+                />
+              )}
             </Canvas>
           </div>
 
-          <Card title="城市指标分析" className="scene-panel">
-            {selected ? (
+          <Card title={sceneMode === 'model' ? '建筑交互' : '城市指标分析'} className="scene-panel">
+            {sceneMode === 'model' ? (
+              <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+                <Select
+                  value={selectedZoneId}
+                  placeholder="选择建筑或区域"
+                  allowClear
+                  options={sandboxZones.map((zone) => ({ label: zone.name, value: zone.id }))}
+                  onChange={(value) => {
+                    setSelectedZoneId(value)
+                    setExploded(false)
+                  }}
+                  style={{ width: '100%' }}
+                />
+                {selectedZone ? (
+                  <Descriptions
+                    column={1}
+                    size="small"
+                    items={[
+                      { key: 'name', label: '名称', children: selectedZone.name },
+                      { key: 'category', label: '类别', children: selectedZone.category },
+                      { key: 'floors', label: '楼层', children: selectedZone.floors || '-' },
+                    ]}
+                  />
+                ) : null}
+                <Button
+                  block
+                  disabled={!selectedZone || selectedZone.floors === 0}
+                  onClick={() => setExploded((current) => !current)}
+                >
+                  {exploded ? '收拢楼层' : '展开楼层'}
+                </Button>
+              </Space>
+            ) : selected ? (
               <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                 <Select
                   value={selected.city.id}

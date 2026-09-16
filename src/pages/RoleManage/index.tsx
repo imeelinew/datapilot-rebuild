@@ -43,8 +43,8 @@ function RoleManage() {
         roleService.getList(),
         roleService.getPermissions(),
       ])
-      setRoles(roleResult.data)
-      setPermissions(permissionResult.data)
+      setRoles(Array.isArray(roleResult.data) ? roleResult.data : [])
+      setPermissions(Array.isArray(permissionResult.data) ? permissionResult.data : [])
     } catch (error) {
       console.error(error)
       message.error('获取角色权限数据失败')
@@ -92,7 +92,7 @@ function RoleManage() {
     setPermissionOpen(true)
     try {
       const result = await roleService.getDetail(role.id)
-      setCheckedKeys(collectIds(result.data.permissions || []))
+      setCheckedKeys(collectIds(Array.isArray(result.data?.permissions) ? result.data.permissions : []))
     } catch (error) {
       console.error(error)
       setCheckedKeys([])

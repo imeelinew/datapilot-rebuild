@@ -72,8 +72,8 @@ function ChartManage() {
         dashboardId,
         chartType,
       })
-      setCharts(result.data.list)
-      setTotal(result.data.total)
+      setCharts(Array.isArray(result.data?.list) ? result.data.list : [])
+      setTotal(result.data?.total ?? 0)
     } catch (error) {
       console.error(error)
       message.error('获取图表列表失败')
@@ -93,7 +93,7 @@ function ChartManage() {
           page: 1,
           pageSize: 100,
         })
-        setDashboards(result.data.list)
+        setDashboards(Array.isArray(result.data?.list) ? result.data.list : [])
       } catch (error) {
         console.error(error)
       }
