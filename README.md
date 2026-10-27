@@ -1,34 +1,34 @@
-# 城市视图
+# City View
 
-城市视图是一套面向城市运营人员和数据分析人员的可视化管理平台，提供城市运行指标仪表盘、动态图表配置、地图与 3D 场景、AI 数据助手以及用户和角色权限管理。
+City View is a visualization platform for city operators and data analysts, with city metrics dashboards, configurable charts, maps and 3D scenes, an AI data assistant, and user and role management.
 
-- 在线地址：<https://city.elinew.tech/>
-- 技术栈：React 19、TypeScript、Redux Toolkit、React Router、Ant Design、ECharts、React Three Fiber、高德地图 JS API、Axios 和 Vite
+- Live site: <https://city.elinew.tech/>
+- Stack: React 19, TypeScript, Redux Toolkit, React Router, Ant Design, ECharts, React Three Fiber, Amap JS API, Axios, and Vite
 
-## 功能模块
+## Features
 
-- 城市数据仪表盘与 CSV 导出
-- 数据源、数据表和字段级联图表编辑器
-- 柱状图、折线图、饼图和散点图统一渲染
-- 基于高德地图的标记点、空气质量覆盖层、交通热力图和城市周边距离分析
-- 基于 React Three Fiber 的城市沙盘建筑交互、楼层展开与三维指标对比
-- 登录鉴权、角色菜单过滤与路由访问控制
-- AI 城市数据问答与分析建议
+- City data dashboards and CSV export
+- Chart editor with cascading data source, table, and field selection
+- Unified rendering for bar, line, pie, and scatter charts
+- Amap markers, air quality overlays, traffic heatmaps, and distance analysis around the city
+- React Three Fiber city model with interactive buildings, expanded floors, and 3D metric comparisons
+- Authentication, role-based menu filtering, and route access control
+- AI-assisted city data questions and analysis suggestions
 
-## 本地开发
+## Local development
 
 ```bash
 npm install
 npm run dev
 ```
 
-## 质量检查
+## Checks
 
 ```bash
 npm run lint
 npm run build
 ```
 
-生产环境由 Cloudflare Pages 托管，`/api` 请求通过 Pages Function 转发至 `http://182.92.74.1:8080`。本地 Vite 代理使用同一后端。项目接口文档位于 <http://182.92.74.1:9999/>。
+Production is hosted on Cloudflare Pages; a Pages Function forwards `/api` requests to `http://182.92.74.1:8080`. The local Vite proxy uses the same backend. API documentation: <http://182.92.74.1:9999/>.
 
-登录页照片：[Denys Nevozhai / Unsplash](https://unsplash.com/photos/shanghai-skyline-and-huangpu-river-D8iZPlX-2fs)。
+Login page photo: [Denys Nevozhai / Unsplash](https://unsplash.com/photos/shanghai-skyline-and-huangpu-river-D8iZPlX-2fs).
