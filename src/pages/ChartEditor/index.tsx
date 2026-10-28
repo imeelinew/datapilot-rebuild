@@ -229,7 +229,9 @@ function ChartEditor() {
   }
 
   async function handleSave() {
-    const values = await form.validateFields()
+    await form.validateFields()
+    // 向导前两步的字段在预览步骤已卸载；读取保留字段，不能只提交当前挂载项。
+    const values = form.getFieldsValue(true) as WizardValues
     const data: ChartInput = {
       dashboardId: values.dashboardId,
       datasourceId: values.datasourceId,
@@ -268,11 +270,8 @@ function ChartEditor() {
     }
   }
 
-  if (loading) {
-    return <Spin fullscreen description="正在加载图表配置" />
-  }
-
   return (
+    <Spin spinning={loading} description="正在加载图表配置">
     <Space orientation="vertical" size="large" style={{ width: '100%' }}>
       <div className="page-header">
         <div>
@@ -359,6 +358,8 @@ function ChartEditor() {
                 >
                   <Select
                     placeholder="请选择表"
+                    showSearch
+                    optionFilterProp="label"
                     options={tables.map((item) => ({
                       label: item.tableName,
                       value: item.tableName,
@@ -375,6 +376,8 @@ function ChartEditor() {
                 >
                   <Select
                     placeholder="分类、名称或横坐标"
+                    showSearch
+                    optionFilterProp="label"
                     options={fields.map((item) => ({
                       label: `${item.columnName}（${item.dataType}）`,
                       value: item.columnName,
@@ -390,6 +393,8 @@ function ChartEditor() {
                 >
                   <Select
                     placeholder="需要统计的数值字段"
+                    showSearch
+                    optionFilterProp="label"
                     options={fields.map((item) => ({
                       label: `${item.columnName}（${item.dataType}）`,
                       value: item.columnName,
@@ -468,6 +473,7 @@ function ChartEditor() {
         </div>
       </Card>
     </Space>
+    </Spin>
   )
 }
 

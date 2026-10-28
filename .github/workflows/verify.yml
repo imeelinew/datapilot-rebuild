@@ -1,0 +1,56 @@
+name: Verify full-stack application
+on: [push, pull_request]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: city
+          POSTGRES_PASSWORD: ci-only-password
+          POSTGRES_DB: city_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U city -d city_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://city:ci-only-password@127.0.0.1:5432/city_test
+      TEST_DATABASE_URL: postgresql://city:ci-only-password@127.0.0.1:5432/city_test
+      JWT_SECRET: ci-only-secret-with-at-least-thirty-two-characters
+      SEED_ADMIN_PASSWORD: LocalDemo-Admin-2026
+      SEED_ANALYST_PASSWORD: LocalDemo-Analyst-2026
+      SEED_USER_PASSWORD: LocalDemo-Visitor-2026
+      CORS_ORIGIN: http://127.0.0.1:5178
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            server/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix server
+      - run: npm run lint && npm run build && npm run test:proxy
+      - run: npm run build --prefix server
+      - run: npm run test:integration
+      - run: npm run api:migrate && npm run api:seed
+      - run: npx playwright install --with-deps chromium
+      - name: Browser acceptance
+        run: |
+          npm start --prefix server > /tmp/city-api.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            curl --fail --silent http://127.0.0.1:3102/api/health && break
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:3102/api/health
+          npx playwright test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure
+          path: |
+            test-results/
+            playwright-report/

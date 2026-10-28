@@ -7,7 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "api:install": "npm ci --prefix server",
+    "api:dev": "npm run dev --prefix server",
+    "api:migrate": "npm run migrate --prefix server",
+    "api:seed": "npm run seed --prefix server",
+    "test:proxy": "node --test tests/proxy.test.mjs",
+    "test:e2e": "playwright test",
+    "test:integration": "npm run test:integration --prefix server"
   },
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
@@ -27,6 +34,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.64.1",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

@@ -23,11 +23,18 @@ function Login() {
 
     const [captchaId, setCaptchaId] = useState('')
     const [captchaImg, setCaptchaImg] = useState('')
+    const [captchaLoading, setCaptchaLoading] = useState(false)
     const [loading, setLoading] = useState(false)
 
     const loadCaptcha = useCallback(async () => {
+        setCaptchaLoading(true)
+        setCaptchaId('')
+        setCaptchaImg('')
         try {
             const result = await authService.getCaptcha()
+            if (!result.data?.captchaId || !result.data?.svg) {
+                throw new Error('验证码响应缺少必要字段')
+            }
             setCaptchaId(result.data.captchaId)
             const svg = result.data.svg
             const base64 = window.btoa(
@@ -39,6 +46,8 @@ function Login() {
         } catch (error) {
             console.error('Failed to load captcha:', error)
             message.error('验证码加载失败')
+        } finally {
+            setCaptchaLoading(false)
         }
     }, [])
 
@@ -133,11 +142,12 @@ function Login() {
                                     className="captcha-image"
                                     onClick={() => void loadCaptcha()}
                                     aria-label="刷新验证码"
+                                    disabled={captchaLoading}
                                 >
                                     {captchaImg ? (
                                         <img src={captchaImg} alt="验证码" />
                                     ) : (
-                                        <span>加载中</span>
+                                        <span>{captchaLoading ? '加载中' : '点击重试'}</span>
                                     )}
                                 </button>
                             </div>
@@ -147,6 +157,7 @@ function Login() {
                             htmlType="submit"
                             block
                             loading={loading}
+                            disabled={!captchaId}
                         >
                             登录
                         </Button>

@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: city
+      POSTGRES_USER: city
+      POSTGRES_PASSWORD: ${CITY_DB_PASSWORD:?Set CITY_DB_PASSWORD}
+    volumes:
+      - city_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U city -d city']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  api:
+    build: ./server
+    environment:
+      DATABASE_URL: postgresql://city:${CITY_DB_PASSWORD:?Set CITY_DB_PASSWORD}@db:5432/city
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET to at least 32 characters}
+      HOST: 0.0.0.0
+      PORT: 3102
+      NODE_ENV: production
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+      AI_API_KEY: ${AI_API_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '127.0.0.1:3102:3102'
+    command: [sh, -c, 'node dist/migrate.js && node dist/index.js']
+    init: true
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+volumes:
+  city_data:

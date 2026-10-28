@@ -33,6 +33,9 @@ function AIChat() {
   const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
   const messageEndRef = useRef<HTMLDivElement>(null)
+  const requestRef = useRef<AbortController | null>(null)
+
+  useEffect(() => () => requestRef.current?.abort(), [])
 
   const loadConversations = useCallback(async () => {
     setLoading(true)
@@ -56,6 +59,7 @@ function AIChat() {
   }, [messages])
 
   async function openConversation(id: number) {
+    if (sending) return
     setConversationId(id)
     setLoading(true)
     try {
@@ -70,6 +74,7 @@ function AIChat() {
   }
 
   async function handleDelete(id: number) {
+    if (sending) return
     try {
       await aiService.deleteConversation(id)
       if (conversationId === id) {
@@ -109,7 +114,9 @@ function AIChat() {
     setMessages([...requestMessages, { role: 'assistant', content: '' }])
 
     let activeId = conversationId
-    const assistantChunks: string[] = []
+    const controller = new AbortController()
+    requestRef.current = controller
+    let receivedText = false
 
     try {
       if (!activeId) {
@@ -117,19 +124,16 @@ function AIChat() {
         activeId = created.data.id
         setConversationId(activeId)
       }
-      await aiService.addMessage(activeId, userMessage)
-
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
+        signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          messages: requestMessages.map(({ role, content: text }) => ({
-            role,
-            content: text,
-          })),
+          conversationId: activeId,
+          content,
         }),
       })
       if (!response.ok || !response.body) {
@@ -151,6 +155,7 @@ function AIChat() {
             .split('\n')
             .find((line) => line.startsWith('data:'))
           if (!dataLine) return
+          if (dataLine.slice(5).trim() === '[DONE]') return
           try {
             const payload = JSON.parse(dataLine.slice(5).trim()) as {
               type?: string
@@ -160,7 +165,7 @@ function AIChat() {
               payload.content &&
               ['text', 'fallback', 'thinking'].includes(payload.type || '')
             ) {
-              assistantChunks.push(payload.content)
+              receivedText = true
               appendAssistantText(payload.content)
             }
           } catch (error) {
@@ -170,21 +175,28 @@ function AIChat() {
         if (done) break
       }
 
-      const assistantContent = assistantChunks.join('') ||
-        '暂时没有生成有效回复，请稍后重试。'
-      if (assistantChunks.length === 0) {
-        appendAssistantText(assistantContent)
-      }
-      await aiService.addMessage(activeId, {
-        role: 'assistant',
-        content: assistantContent,
-      })
+      if (!receivedText) throw new Error('AI 未返回有效内容')
+      // 服务端在同一事务保存整轮消息，重新读取权威记录以保持页面与数据库一致。
+      const saved = await aiService.getConversation(activeId)
+      setMessages(saved.data.messages || [])
       await loadConversations()
     } catch (error) {
+      if (controller.signal.aborted) return
       console.error(error)
-      appendAssistantText('请求失败，请检查网络后重试。')
+      if (activeId) {
+        try {
+          const saved = await aiService.getConversation(activeId)
+          setMessages(saved.data.messages || [])
+        } catch {
+          setMessages(requestMessages.slice(0, -1))
+        }
+      } else {
+        setMessages(requestMessages.slice(0, -1))
+      }
+      setInput(content)
       antdMessage.error('AI 请求失败')
     } finally {
+      requestRef.current = null
       setSending(false)
     }
   }
@@ -198,6 +210,7 @@ function AIChat() {
           <Button
             type="text"
             icon={<PlusOutlined />}
+            disabled={sending}
             onClick={() => {
               setConversationId(undefined)
               setMessages([])
@@ -217,11 +230,13 @@ function AIChat() {
                   <Popconfirm
                     key="delete"
                     title="删除这段对话？"
+                    disabled={sending}
                     onConfirm={() => void handleDelete(item.id)}
                   >
                     <Button
                       type="text"
                       danger
+                      disabled={sending}
                       size="small"
                       icon={<DeleteOutlined />}
                       onClick={(event) => event.stopPropagation()}

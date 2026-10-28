@@ -1,9 +1,7 @@
 import request from '@/utils/request'
 import type {
-  AiMessage,
   ConversationPageResult,
   ConversationResult,
-  MessageResult,
 } from '@/types/ai'
 
 const aiService = {
@@ -24,12 +22,6 @@ const aiService = {
   },
   deleteConversation(id: number) {
     return request.delete(`/ai/conversations/${id}`)
-  },
-  addMessage(id: number, data: AiMessage) {
-    return request.post(
-      `/ai/conversations/${id}/messages`,
-      data,
-    ) as Promise<MessageResult>
   },
 }
 

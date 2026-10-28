@@ -3,7 +3,9 @@
 City View is a visualization platform for city operators and data analysts, with city metrics dashboards, configurable charts, maps and 3D scenes, an AI data assistant, and user and role management.
 
 - Live site: <https://city.elinew.tech/>
-- Stack: React 19, TypeScript, Redux Toolkit, React Router, Ant Design, ECharts, React Three Fiber, Amap JS API, Axios, and Vite
+- Stack: React 19, TypeScript, Redux Toolkit, React Router, Ant Design, ECharts, React Three Fiber, Amap JS API, Axios, Vite, Fastify, and PostgreSQL
+
+See [full-stack implementation and setup](docs/FULLSTACK.md) for database migrations, testing, and demonstration details.
 
 ## Features
 
@@ -29,6 +31,6 @@ npm run lint
 npm run build
 ```
 
-Production is hosted on Cloudflare Pages; a Pages Function forwards `/api` requests to `http://182.92.74.1:8080`. The local Vite proxy uses the same backend. API documentation: <http://182.92.74.1:9999/>.
+Production is hosted on Cloudflare Pages. A Pages Function forwards `/api` requests to the HTTPS origin configured with `API_ORIGIN`; the local Vite proxy defaults to `http://127.0.0.1:3102`.
 
 Login page photo: [Denys Nevozhai / Unsplash](https://unsplash.com/photos/shanghai-skyline-and-huangpu-river-D8iZPlX-2fs).
